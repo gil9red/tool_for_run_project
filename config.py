@@ -16,8 +16,6 @@ URL_JENKINS = "http://10.77.204.68:8080"
 # NOTE: Get <PEM_FILE_NAME>: openssl pkcs12 -nodes -out ipetrash.pem -in ipetrash.p12
 NAME_CERT = "ipetrash.pem"
 
-# TODO:
-URL_DEFAULT_SVN_PATH = "svn+cplus://svn2.compassplus.ru/twrbs/trunk/dev"
 
 ROOT_DIR = Path(__file__).resolve().parent
 PATH_LOCAL_CERT = ROOT_DIR / NAME_CERT

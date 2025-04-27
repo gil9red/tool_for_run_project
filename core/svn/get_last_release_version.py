@@ -10,8 +10,8 @@ import xml.etree.ElementTree as ET
 
 from datetime import date, timedelta
 
-from config import URL_DEFAULT_SVN_PATH
 
+URL_DEFAULT_SVN_PATH = "svn+cplus://svn2.compassplus.ru/twrbs/trunk/dev"
 
 TEXT_RELEASE_VERSION = "Release version "
 PATTERN_RELEASE_VERSION = re.compile(rf"{TEXT_RELEASE_VERSION}([\d.]+) ")
