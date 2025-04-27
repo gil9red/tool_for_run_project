@@ -1,0 +1,251 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+__author__ = "ipetrash"
+
+
+import sys
+import traceback
+
+from core import (
+    GoException,
+    ParameterAvailabilityException,
+    AvailabilityEnum,
+    get_similar_value,
+    is_like_a_version,
+)
+
+import settings
+
+# TODO: Нужно для работы core.commands
+settings.run_settings_preprocess()
+SETTINGS = settings.SETTINGS
+
+from core.commands import (
+    _open_dir,
+    Command,
+    resolve_whats,
+    resolve_version,
+    get_similar_version_path,
+)
+from settings import get_settings, resolve_name, get_path_by_name
+
+from third_party.from_ghbdtn import from_ghbdtn
+
+
+def has_similar_value(alias: str, items: list) -> bool:
+    return get_similar_value(alias, items) is not None
+
+
+ABOUT_TEXT = r"""
+RUN:
+  go <name> <version> <what> - Run tool
+  go <name> <what>           - Run tool (trunk version)
+  go open <name> <version>   - Open dir version
+  go open <name>             - Open dir
+  go <name>                  - Print versions
+
+SUPPORTED NAMES:
+  {}
+
+EXAMPLES:
+  > go optt trunk designer
+    Run: "C:/DEV__OPTT/trunk_optt/!!designer.cmd"
+
+  > go tx 3.2.6.10 server
+    Run: "C:/DEV__TX/3.2.6.10/!!server.cmd"
+
+  > go tx 6 server
+    Run: "C:/DEV__TX/3.2.6.10/!!server.cmd"
+
+  > go tx 3.2.6,3.2.7,trunk server
+    Run: "C:/DEV__TX/3.2.6.10/!!server.cmd"
+
+  > go tx 3.2.6-trunk server
+    Run: "C:/DEV__TX/3.2.6.10/!!server.cmd"
+
+  > $ go tx 35 u
+    Run: svn update in C:\DEV__TX\3.2.35.10
+
+  > $ go tx 35 u -f
+    Run: svn update in C:\DEV__TX\3.2.35.10
+
+  > go tx designer
+    Run: "C:/DEV__TX/trunk_tx/!!designer.cmd"
+
+  > go tx get_last
+    Run: tx call 'get_last_release_version'
+    Последняя версия релиза для trunk: 3.2.36.10
+    
+  > go tx 34 get_last
+    Run: tx call 'get_last_release_version'
+    Последняя версия релиза для 3.2.34.10: 3.2.34.10.17
+
+  > go tx find_ver TXI-8197
+    Run: tx call 'find_versions' (['TXI-8197'])
+    Строка 'TXI-8197' встречается в версиях: trunk, 3.2.36.10, 3.2.35.10, 3.2.34.10
+    
+  > go tx 34-35 find_rele TXI-8197
+    Run: tx call 'find_release_versions' (['TXI-8197'])
+    Коммит с 'TXI-8197' в 3.2.34.10 попал в версию: 3.2.34.10.18
+    
+    Run: tx call 'find_release_versions' (['TXI-8197'])
+    Коммит с 'TXI-8197' в 3.2.35.10 попал в версию: 3.2.35.10.11
+
+  > go open optt trunk
+    Open: "C:/DEV__OPTT/trunk_optt"
+
+  > go open optt
+    Open: "C:/DEV__OPTT"
+
+  > go optt
+    Supported versions: 2.1.10, trunk_optt
+    Supported <what>: build, cleanup, compile, designer, explorer, log, server, update
+    
+  > go optt kill
+  > go optt kill -d
+  > go optt kill -s
+  > go optt kill -e
+  > go optt kill -a
+  > go optt kill -se
+  
+  > go tx s pg
+    Запуск: 'C:\\DEV__TX\\trunk\\!!server-postgres.cmd'
+    
+  > go tx s+e pg
+    Запуск: 'C:\\DEV__TX\\trunk\\!!server-postgres.cmd'
+    Запуск: 'C:\\DEV__TX\\trunk\\!!explorer.cmd'
+""".format(
+    ", ".join(SETTINGS.keys()),
+).strip()
+
+
+def parse_cmd_args(args: list[str]) -> list[Command]:
+    args = args.copy()
+    name, whats = [None] * 2
+    versions = []
+
+    # Первый аргумент <name>
+    if args:
+        name = args.pop(0).lower()
+        name = resolve_name(name)
+
+    options = get_settings(name)["options"]
+    maybe_version = options["version"] != AvailabilityEnum.PROHIBITED
+    maybe_what = options["what"] != AvailabilityEnum.PROHIBITED
+
+    # Второй аргумент это или <version>, или <what>
+    if (maybe_version or maybe_what) and args:
+        alias = args.pop(0).lower()
+
+        if (
+            is_like_a_version(alias)
+            and options["version"] != AvailabilityEnum.PROHIBITED
+        ):
+            # Например, "3.2.23,3.2.24,3.2.25,trunk"
+            if "," in alias:
+                for x in alias.split(","):
+                    version = resolve_version(name, x)
+                    versions.append(version)
+
+            elif "-" in alias:  # Например, "3.2.23-trunk"
+                start, end = alias.split("-")
+                start = resolve_version(name, start)
+                end = resolve_version(name, end)
+
+                found = False
+                for version in get_settings(name)["versions"]:
+                    if start == version:
+                        found = True
+
+                    if not found:
+                        continue
+
+                    versions.append(version)
+
+                    if end in version:
+                        break
+
+            else:
+                version = resolve_version(name, alias)
+                versions.append(version)
+
+        elif options["what"] != AvailabilityEnum.PROHIBITED:
+            whats = resolve_whats(name, alias)
+
+    # Третий аргумент <what>
+    if maybe_what and args and not whats:
+        whats = args.pop(0).lower()
+        whats = resolve_whats(name, whats)
+
+    if not versions:
+        versions = [None]
+
+    if not whats:
+        whats = [None]
+
+    commands = []
+    for version in versions:
+        for what in whats:
+            commands.append(Command(name, version, what, args))
+    return commands
+
+
+def run(args: list[str]):
+    try:
+        # TODO: Можно ли перенести в SETTINGS?
+        if args[0] in ["open", from_ghbdtn("open")]:
+            args.pop(0)
+
+            if len(args) == 1:
+                path = get_path_by_name(args[0])
+                _open_dir(path)
+
+            elif len(args) >= 2:
+                name, version = args[:2]
+                path = get_similar_version_path(name, version)
+                _open_dir(path)
+
+            else:
+                _print_help()
+
+            return
+
+        for command in parse_cmd_args(args):
+            command.run()
+
+    except ParameterAvailabilityException as e:
+        name = e.command.name
+        settings = get_settings(name)
+
+        # Если для сущности параметр версии возможен
+        if settings["options"]["version"] != AvailabilityEnum.PROHIBITED:
+            supported_versions = ", ".join(sorted(settings["versions"]))
+            print(f"Поддерживаемые версии: {supported_versions}")
+
+        # Если для сущности параметр what возможен
+        if settings["options"]["what"] != AvailabilityEnum.PROHIBITED:
+            supported_whats = ", ".join(sorted(settings["whats"]))
+            print(f"Поддерживаемые <what>: {supported_whats}")
+
+    except GoException as e:
+        # Если передан флаг отладки
+        if (
+            args[-1].lower().startswith("-d")
+        ):  # TODO: Выводить про этот флаг вместе с ошибкой в else
+            print(traceback.format_exc())
+        else:
+            print(e)
+
+
+def _print_help():
+    print(ABOUT_TEXT)
+    sys.exit()
+
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    if not args:
+        _print_help()
+
+    run(args)
