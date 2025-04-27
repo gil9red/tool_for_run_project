@@ -5,6 +5,7 @@ __author__ = "ipetrash"
 
 
 import copy
+
 from pathlib import Path
 from typing import Any, Callable
 
@@ -17,19 +18,10 @@ from core import (
 from third_party.from_ghbdtn import from_ghbdtn
 
 
-# from core.commands import (
-#     get_versions_by_path,
-#     _run_path,
-#     _kill,
-#     _processes,
-#     _get_last_release_version,
-#     _find_release_versions,
-#     _find_versions,
-#     _manager_up,
-#     _manager_clean,
-#     _server,
-#     _svn_update,
-# )
+def get_func_from_commands(function_name: str) -> Callable:
+    # TODO: Проверить на callable
+    module = __import__("core.commands", fromlist=["commands"])
+    return getattr(module, function_name)
 
 
 # SOURCE: https://stackoverflow.com/a/20666342/5909792
@@ -43,12 +35,6 @@ def merge_dicts(source: dict, destination: dict) -> dict:
             destination[key] = value
 
     return destination
-
-
-# TODO:
-# print(eval("__import__('core.commands', fromlist=['commands'])._svn_update"))
-#
-# quit()
 
 
 # TODO:
@@ -78,15 +64,13 @@ __SETTINGS = {
             "explorer": "!!explorer.cmd",
             "server": (
                 "server",
-                # TODO: "${__import__('core.commands')._server}"
-                # TODO: Проверить на callable
-                "${__import__('core.commands', fromlist=['commands'])._server}",
+                "${get_func_from_commands('server')}",
             ),
             "compile": "!build_ads__pause.bat",
             "build": "!build_kernel__pause.cmd",
             "update": (
                 "svn update",
-                "${__import__('core.commands', fromlist=['commands'])._svn_update}",
+                "${get_func_from_commands('svn_update')}",
             ),
             "log": (
                 "svn log",
@@ -104,12 +88,12 @@ __SETTINGS = {
                 "svn show modifications dialog",
                 'start /b "" TortoiseProc /command:repostatus /path:"{path}"',
             ),
-            "run": "${__import__('core.commands', fromlist=['commands'])._run_path}",
-            "kill": "${__import__('core.commands', fromlist=['commands'])._kill}",
-            "processes": "${__import__('core.commands', fromlist=['commands'])._processes}",
-            "get_last_release_version": "${__import__('core.commands', fromlist=['commands'])._get_last_release_version}",
-            "find_release_versions": "${__import__('core.commands', fromlist=['commands'])._find_release_versions}",
-            "find_versions": "${__import__('core.commands', fromlist=['commands'])._find_versions}",
+            "run": "${get_func_from_commands('run_path')}",
+            "kill": "${get_func_from_commands('kill')}",
+            "processes": "${get_func_from_commands('processes')}",
+            "get_last_release_version": "${get_func_from_commands('get_last_release_version')}",
+            "find_release_versions": "${get_func_from_commands('find_release_versions')}",
+            "find_versions": "${get_func_from_commands('find_versions')}",
             "trace": "!!trace_viewer.cmd",
         },
     },
@@ -148,8 +132,8 @@ __SETTINGS = {
             "what": AvailabilityEnum.OPTIONAL,
         },
         "whats": {
-            "up": "${__import__('core.commands', fromlist=['commands'])._manager_up}",
-            "clean": "${__import__('core.commands', fromlist=['commands'])._manager_clean}",
+            "up": "${get_func_from_commands('manager_up')}",
+            "clean": "${get_func_from_commands('manager_clean')}",
         },
     },
     "doc": {
@@ -212,14 +196,21 @@ def settings_preprocess(settings: dict[str, dict]) -> dict[str, dict]:
 
     # TODO: Ловить ошибки с eval и выводить что туда попало
     def foo(k, v):
-        if isinstance(v, str):
-            m = pattern.match(v)
-            if m:
-                return eval(m.group(1))
-        if isinstance(v, tuple) and len(v) == 2 and isinstance(v[1], str):
-            m = pattern.match(v[1])
-            if m:
-                return eval(m.group(1))
+        if isinstance(v, (str, tuple)):
+            orig_eval_str = v
+
+            if isinstance(v, tuple) and len(v) == 2 and isinstance(v[1], str):
+                orig_eval_str = v[1]
+
+            if m := pattern.match(orig_eval_str):
+                eval_str = m.group(1)
+                try:
+                    return eval(eval_str)
+                except Exception:
+                    raise Exception(
+                        f"Error on eval {eval_str!r}, original {orig_eval_str!r}"
+                    )
+
         return v
 
     walk_dict(new_settings, foo)

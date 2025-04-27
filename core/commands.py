@@ -38,7 +38,7 @@ from settings import get_settings, get_path_by_name
 from third_party.from_ghbdtn import from_ghbdtn
 
 
-def _run_file(file_name: str):
+def run_file(file_name: str):
     dir_file_name = os.path.dirname(file_name)
     file_name = os.path.normpath(file_name)
 
@@ -51,7 +51,7 @@ def _run_file(file_name: str):
     os.startfile(file_name)
 
 
-def _open_dir(path: str):
+def open_dir(path: str):
     if os.path.isfile(path):
         dir_file_name = os.path.dirname(path)
     else:
@@ -106,7 +106,7 @@ class RunContext:
     description: str = ""
 
 
-def _run_path(path: str, args: list[str] | None = None, context: RunContext = None):
+def run_path(path: str, args: list[str] | None = None, context: RunContext = None):
     if not args:
         print("Нужно задать маску файла")
         return
@@ -127,10 +127,10 @@ def _run_path(path: str, args: list[str] | None = None, context: RunContext = No
         return
 
     file_name = str(files[0])
-    _run_file(file_name)
+    run_file(file_name)
 
 
-def _kill(path: str, args: list[str] | None = None, context: RunContext = None):
+def kill(path: str, args: list[str] | None = None, context: RunContext = None):
     pids = []
 
     # Если аргументы не заданы, то убиваем все процессы
@@ -165,7 +165,7 @@ def _kill(path: str, args: list[str] | None = None, context: RunContext = None):
         print("Не удалось найти процессы!")
 
 
-def _processes(path: str, args: list[str] | None = None, context: RunContext = None):
+def processes(path: str, args: list[str] | None = None, context: RunContext = None):
     class ProcessEnum(enum.Enum):
         Server = enum.auto()
         Explorer = enum.auto()
@@ -205,7 +205,7 @@ def _processes(path: str, args: list[str] | None = None, context: RunContext = N
         print("Не удалось найти процессы!")
 
 
-def _get_last_release_version(
+def get_last_release_version(
     path: str,
     args: list[str] | None = None,
     context: RunContext = None,
@@ -232,7 +232,7 @@ def _get_last_release_version(
     print(f"Последняя версия релиза для {version}: {result}\n")
 
 
-def _find_release_versions(
+def find_release_versions(
     path: str,
     args: list[str] | None = None,
     context: RunContext = None,
@@ -269,7 +269,7 @@ def _find_release_versions(
     print(f"Коммит с {text!r} в {version} попал в версию: {result}\n")
 
 
-def _find_versions(
+def find_versions(
     path: str,
     args: list[str] | None = None,
     context: RunContext = None,
@@ -302,7 +302,7 @@ def _find_versions(
     print(f"Строка {text!r} встречается в версиях: {result}")
 
 
-def _manager_up(path: str, _: list[str] | None = None, context: RunContext = None):
+def manager_up(path: str, _: list[str] | None = None, context: RunContext = None):
     path = Path(path)
 
     # NOTE: "C:\DEV__RADIX\manager\manager\bin\manager.cmd" -> "C:\DEV__RADIX\manager"
@@ -328,7 +328,7 @@ def _manager_up(path: str, _: list[str] | None = None, context: RunContext = Non
         shutil.move(file, new_file)
 
 
-def _manager_clean(path: str, _: list[str] | None = None, context: RunContext = None):
+def manager_clean(path: str, _: list[str] | None = None, context: RunContext = None):
     path = Path(path)
 
     # NOTE: "C:\DEV__RADIX\manager\manager\bin\manager.cmd" -> "C:\DEV__RADIX\manager"
@@ -345,7 +345,7 @@ def _manager_clean(path: str, _: list[str] | None = None, context: RunContext = 
         file.unlink()
 
 
-def _server(path: str, args: list[str] | None = None, _: RunContext = None):
+def server(path: str, args: list[str] | None = None, _: RunContext = None):
     # TODO: Перенести в settings
     default_file: str = "!!server.cmd"
     arg_by_file: dict[str, str] = {
@@ -360,10 +360,10 @@ def _server(path: str, args: list[str] | None = None, _: RunContext = None):
                 break
 
     full_file_name: str = str(Path(path) / file_name)
-    _run_file(full_file_name)
+    run_file(full_file_name)
 
 
-def _svn_update(path: str, args: list[str] | None = None, context: RunContext = None):
+def svn_update(path: str, args: list[str] | None = None, context: RunContext = None):
     force = False
 
     # force - обновляемся, даже если сборка сломана
@@ -492,7 +492,7 @@ def go_run(
     if (os.path.isfile(path) and not what and not args) or all_options_is_prohibited(
         name
     ):
-        _run_file(path)
+        run_file(path)
         return
 
     if version:
@@ -511,7 +511,7 @@ def go_run(
 
     if isinstance(value, str):
         file_name = dir_file_name + "/" + value
-        _run_file(file_name)
+        run_file(file_name)
         return
 
     description, command = value

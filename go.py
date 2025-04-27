@@ -17,12 +17,12 @@ from core import (
 
 import settings
 
-# TODO: Нужно для работы core.commands
+# NOTE: Нужно для работы core.commands
 settings.run_settings_preprocess()
 SETTINGS = settings.SETTINGS
 
 from core.commands import (
-    _open_dir,
+    open_dir,
     Command,
     resolve_whats,
     resolve_version,
@@ -199,12 +199,12 @@ def run(args: list[str]):
 
             if len(args) == 1:
                 path = get_path_by_name(args[0])
-                _open_dir(path)
+                open_dir(path)
 
             elif len(args) >= 2:
                 name, version = args[:2]
                 path = get_similar_version_path(name, version)
-                _open_dir(path)
+                open_dir(path)
 
             else:
                 _print_help()
