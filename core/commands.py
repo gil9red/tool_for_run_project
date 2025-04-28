@@ -512,7 +512,7 @@ def go_run(
         command(path, args, RunContext(context_command, description))
         return
 
-    find_string = "" if not args else args[0]
+    find_string = args[0] if args else ""
     command = command.format(path=dir_file_name, find_string=find_string)
 
     print(f"Запуск: {description} в {dir_file_name}")
