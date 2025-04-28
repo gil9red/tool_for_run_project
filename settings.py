@@ -62,10 +62,11 @@ __SETTINGS = {
         "whats": {
             "designer": "!!designer.cmd",
             "explorer": "!!explorer.cmd",
-            "server": (
-                "server",
-                "${get_func_from_commands('server')}",
-            ),
+            "server": {
+                "__default__": "ora",
+                "ora": "!!server.cmd",
+                "pg": "!!server-postgres.cmd",
+            },
             "compile": "!build_ads__pause.bat",
             "build": "!build_kernel__pause.cmd",
             "update": (

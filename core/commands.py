@@ -345,24 +345,6 @@ def manager_clean(path: str, _: list[str] | None = None, context: RunContext = N
         file.unlink()
 
 
-def server(path: str, args: list[str] | None = None, _: RunContext = None):
-    # TODO: Перенести в settings
-    default_file: str = "!!server.cmd"
-    arg_by_file: dict[str, str] = {
-        "ora": default_file,
-        "pg": "!!server-postgres.cmd",
-    }
-    file_name: str = default_file
-    if args:
-        for arg, value in arg_by_file.items():
-            if arg in args:
-                file_name = value
-                break
-
-    full_file_name: str = str(Path(path) / file_name)
-    run_file(full_file_name)
-
-
 def svn_update(path: str, args: list[str] | None = None, context: RunContext = None):
     force = False
 
@@ -489,8 +471,9 @@ def go_run(
     value = get_file_by_what(name, what)
 
     # Если по <name> указывается файл, то сразу его и запускаем
-    if (os.path.isfile(path) and not what and not args) or all_options_is_prohibited(
-        name
+    if (
+        (os.path.isfile(path) and not what and not args)
+        or all_options_is_prohibited(name)
     ):
         run_file(path)
         return
@@ -508,6 +491,14 @@ def go_run(
 
     # Move to active dir
     os.chdir(dir_file_name)
+
+    # Получение из аргументов
+    if isinstance(value, dict):
+        arg = args[0] if args else ""
+        if not arg:
+            arg = value["__default__"]
+
+        value = value[arg]
 
     if isinstance(value, str):
         file_name = dir_file_name + "/" + value
