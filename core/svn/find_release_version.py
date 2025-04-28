@@ -10,8 +10,7 @@ import xml.etree.ElementTree as ET
 
 from datetime import date, timedelta
 
-from .get_last_release_version import get_last_release_version
-from config import URL_DEFAULT_SVN_PATH
+from .get_last_release_version import URL_DEFAULT_SVN_PATH, get_last_release_version
 
 
 def find_release_version(
