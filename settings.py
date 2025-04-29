@@ -43,7 +43,7 @@ def merge_dicts(source: dict, destination: dict) -> dict:
     return destination
 
 
-# TODO:
+# SOURCE: https://github.com/gil9red/SimplePyScripts/blob/c8639e909c2ad48c127e11595396f148d5970e10/walk_dict.py
 def walk_dict(
     node: dict,
     value_process_func: Callable[[Any, Any], Any] | None = None,
@@ -60,7 +60,7 @@ def walk_dict(
 PATTERN_CODE = re.compile(r"^\$\{(.+?)}$")
 
 
-def walk_dir_run_code(_, v: Any) -> Any:
+def walk_dir_run_code(_: Any, v: Any) -> Any:
     match v:
         case (str() as value) | [_, str() as value]:
             if m := PATTERN_CODE.match(value):
