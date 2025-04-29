@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from core import (
+    GoException,
     AvailabilityEnum,
     is_like_a_version,
     get_similar_value,
@@ -19,9 +20,11 @@ from third_party.from_ghbdtn import from_ghbdtn
 
 
 def get_func_from_commands(function_name: str) -> Callable:
-    # TODO: Проверить на callable
     module = __import__("core.commands", fromlist=["commands"])
-    return getattr(module, function_name)
+    func = getattr(module, function_name)
+    if not callable(func):
+        raise GoException(f"Ожидается, что в {function_name!r} будет функция, а не {type(func)}")
+    return func
 
 
 # SOURCE: https://stackoverflow.com/a/20666342/5909792
