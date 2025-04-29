@@ -32,16 +32,21 @@ assert resolve_what("e") == "explorer"
 assert resolve_what("b") == "build"
 
 # TODO: Зависит от окружения - без папок локально не работает
-assert resolve_version("tx", "trunk") == "trunk_tx"
-assert resolve_version("еч", "trunk") == "trunk_tx"
-assert resolve_version("optt", "trunk") == "trunk_optt"
-assert resolve_version("щзе", "trunk") == "trunk_optt"
-assert resolve_version("tx", "екгтл") == "trunk_tx"
-assert resolve_version("tx", "ек") == "trunk_tx"
+assert resolve_version("tx", "trunk") == "trunk"
+assert resolve_version("tx", "tr") == "trunk"
+assert resolve_version("еч", "trunk") == "trunk"
+assert resolve_version("optt", "trunk") == "trunk"
+assert resolve_version("щзе", "trunk") == "trunk"
+assert resolve_version("tx", "екгтл") == "trunk"
+assert resolve_version("tx", "ек") == "trunk"
 
 # TODO: Зависит от окружения - без папок локально не работает
 assert get_similar_version_path("tx", "trunk")
+assert get_similar_version_path("tx", "tru")
+assert get_similar_version_path("tx", "екгтл")
+assert get_similar_version_path("tx", "екг")
 assert get_similar_version_path("еч", "trunk")
+assert get_similar_version_path("еч", "екгтл")
 
 assert is_like_a_version("trunk")
 assert is_like_a_version("екгтл")
