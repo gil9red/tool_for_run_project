@@ -5,6 +5,7 @@ __author__ = "ipetrash"
 
 
 import copy
+import re
 
 from pathlib import Path
 from typing import Any, Callable
@@ -23,7 +24,9 @@ def get_func_from_commands(function_name: str) -> Callable:
     module = __import__("core.commands", fromlist=["commands"])
     func = getattr(module, function_name)
     if not callable(func):  # NOTE: Функция или функтор
-        raise GoException(f"Ожидается, что в {function_name!r} ({type(func)}) будет вызываемый объект")
+        raise GoException(
+            f"Ожидается, что в {function_name!r} ({type(func)}) будет вызываемый объект"
+        )
     return func
 
 
@@ -52,6 +55,28 @@ def walk_dict(
 
         if isinstance(value, dict):
             walk_dict(value, value_process_func)
+
+
+PATTERN_CODE = re.compile(r"^\$\{(.+?)}$")
+
+
+def walk_dir_run_code(_, v: Any) -> Any:
+    if isinstance(v, (str, tuple)):
+        orig_eval_str = v
+
+        if isinstance(v, tuple) and len(v) == 2 and isinstance(v[1], str):
+            orig_eval_str = v[1]
+
+        if m := PATTERN_CODE.match(orig_eval_str):
+            eval_str = m.group(1)
+            try:
+                return eval(eval_str)
+            except Exception:
+                raise Exception(
+                    f"Error on eval {eval_str!r}, original {orig_eval_str!r}"
+                )
+
+    return v
 
 
 __SETTINGS = {
@@ -192,32 +217,7 @@ def settings_preprocess(settings: dict[str, dict]) -> dict[str, dict]:
     for name in private_names:
         new_settings.pop(name)
 
-    # TODO: Сделать проход до Update from bases
-    # TODO:
-    import re
-
-    pattern = re.compile(r"^\$\{(.+?)}$")
-
-    # TODO: Ловить ошибки с eval и выводить что туда попало
-    def foo(k, v):
-        if isinstance(v, (str, tuple)):
-            orig_eval_str = v
-
-            if isinstance(v, tuple) and len(v) == 2 and isinstance(v[1], str):
-                orig_eval_str = v[1]
-
-            if m := pattern.match(orig_eval_str):
-                eval_str = m.group(1)
-                try:
-                    return eval(eval_str)
-                except Exception:
-                    raise Exception(
-                        f"Error on eval {eval_str!r}, original {orig_eval_str!r}"
-                    )
-
-        return v
-
-    walk_dict(new_settings, foo)
+    walk_dict(new_settings, walk_dir_run_code)
 
     return new_settings
 
