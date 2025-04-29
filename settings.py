@@ -61,20 +61,14 @@ PATTERN_CODE = re.compile(r"^\$\{(.+?)}$")
 
 
 def walk_dir_run_code(_, v: Any) -> Any:
-    if isinstance(v, (str, tuple)):
-        orig_eval_str = v
-
-        if isinstance(v, tuple) and len(v) == 2 and isinstance(v[1], str):
-            orig_eval_str = v[1]
-
-        if m := PATTERN_CODE.match(orig_eval_str):
-            eval_str = m.group(1)
-            try:
-                return eval(eval_str)
-            except Exception:
-                raise Exception(
-                    f"Error on eval {eval_str!r}, original {orig_eval_str!r}"
-                )
+    match v:
+        case (str() as value) | [_, str() as value]:
+            if m := PATTERN_CODE.match(value):
+                eval_str = m.group(1)
+                try:
+                    return eval(eval_str)
+                except Exception:
+                    raise Exception(f"Error on eval {eval_str!r}, original {value!r}")
 
     return v
 
