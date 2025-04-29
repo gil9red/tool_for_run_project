@@ -22,8 +22,8 @@ from third_party.from_ghbdtn import from_ghbdtn
 def get_func_from_commands(function_name: str) -> Callable:
     module = __import__("core.commands", fromlist=["commands"])
     func = getattr(module, function_name)
-    if not callable(func):
-        raise GoException(f"Ожидается, что в {function_name!r} будет функция, а не {type(func)}")
+    if not callable(func):  # NOTE: Функция или функтор
+        raise GoException(f"Ожидается, что в {function_name!r} ({type(func)}) будет вызываемый объект")
     return func
 
 
