@@ -5,6 +5,7 @@ __author__ = "ipetrash"
 
 
 import copy
+import json
 import re
 
 from pathlib import Path
@@ -73,101 +74,9 @@ def walk_dir_run_code(_: Any, v: Any) -> Any:
     return v
 
 
-__SETTINGS = {
-    "__radix_base": {
-        "options": {
-            "version": AvailabilityEnum.OPTIONAL,
-            "what": AvailabilityEnum.REQUIRED,
-            "args": AvailabilityEnum.OPTIONAL,
-            "default_version": "trunk",
-        },
-        "whats": {
-            "designer": "!!designer.cmd",
-            "explorer": "!!explorer.cmd",
-            "server": {
-                "__default__": "ora",
-                "ora": "!!server.cmd",
-                "pg": "!!server-postgres.cmd",
-            },
-            "compile": "!build_ads__pause.bat",
-            "build": "!build_kernel__pause.cmd",
-            "update": (
-                "svn update",
-                "${get_func_from_commands('svn_update')}",
-            ),
-            "log": (
-                "svn log",
-                r'start /b "" TortoiseProc /command:log /path:"{path}" /findstring:"{find_string}"',
-            ),
-            "cleanup": (
-                "svn cleanup",
-                'start /b "" TortoiseProc /command:cleanup /path:"{path}" /cleanup /nodlg /closeonend:2',
-            ),
-            "revert": (
-                "svn revert",
-                'start /b "" TortoiseProc /command:revert /path:"{path}"',
-            ),
-            "modifications": (
-                "svn show modifications dialog",
-                'start /b "" TortoiseProc /command:repostatus /path:"{path}"',
-            ),
-            "run": "${get_func_from_commands('run_path')}",
-            "kill": "${get_func_from_commands('kill')}",
-            "processes": "${get_func_from_commands('processes')}",
-            "get_last_release_version": "${get_func_from_commands('get_last_release_version')}",
-            "find_release_versions": "${get_func_from_commands('find_release_versions')}",
-            "find_versions": "${get_func_from_commands('find_versions')}",
-            "trace": "!!trace_viewer.cmd",
-        },
-    },
-    "radix": {
-        "base": "__radix_base",
-        "path": "C:/DEV__RADIX",
-        "base_version": "2.1.",
-    },
-    "tx": {
-        "base": "__radix_base",
-        "path": "C:/DEV__TX",
-        "base_version": "3.2.",
-        "jenkins_url": (
-            "{URL_JENKINS}/job/assemble_tx/branch={version},label=lightweight/lastBuild/api/json?tree=result,timestamp"
-        ),
-        "svn_dev_url": "svn+cplus://svn2.compassplus.ru/twrbs/trunk/dev",
-    },
-    "optt": {
-        "base": "__radix_base",
-        "path": "C:/DEV__OPTT",
-        "base_version": "2.1.",
-        "jenkins_url": "{URL_JENKINS}/job/OPTT_{version}_build/lastBuild/api/json?tree=result,timestamp",
-        "svn_dev_url": "svn+cplus://svn2.compassplus.ru/twrbs/csm/optt/dev",
-    },
-    "__simple_base": {
-        "options": {
-            "version": AvailabilityEnum.PROHIBITED,
-            "what": AvailabilityEnum.PROHIBITED,
-            "args": AvailabilityEnum.PROHIBITED,
-        }
-    },
-    "manager": {
-        "base": "__simple_base",
-        "path": "C:/DEV__RADIX/manager/manager/bin/manager.cmd",
-        "options": {
-            "what": AvailabilityEnum.OPTIONAL,
-        },
-        "whats": {
-            "up": "${get_func_from_commands('manager_up')}",
-            "clean": "${get_func_from_commands('manager_clean')}",
-        },
-    },
-    "doc": {
-        "base": "__simple_base",
-        "path": "C:/Program Files (x86)/DocFetcher/DocFetcher.exe",
-    },
-    "specifications": {
-        "base": "__simple_base",
-        "path": "C:/DOC/Specifications",
-    },
-}
+# TODO: В конфиг
+PATH_SETTINGS = Path(__file__).parent.resolve() / "settings.json"
+__SETTINGS = json.loads(PATH_SETTINGS.read_text(encoding="utf-8"))
 
 
 def get_versions_by_path(path: str) -> dict[str, str]:
