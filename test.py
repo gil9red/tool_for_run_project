@@ -9,6 +9,10 @@ from core.commands import resolve_whats, resolve_version, get_similar_version_pa
 from core import is_like_a_version
 from settings import SETTINGS, resolve_name
 
+
+# TODO: unittest
+
+
 for k in SETTINGS:
     assert resolve_name(k) == k
     assert resolve_name(from_ghbdtn(k)) == k
