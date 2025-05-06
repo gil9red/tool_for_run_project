@@ -7,6 +7,7 @@ __author__ = "ipetrash"
 from pathlib import Path
 
 
+# TODO: Переменные в config.json
 # TODO:
 JIRA_HOST = "https://helpdesk.compassluxe.com"
 # TODO:
