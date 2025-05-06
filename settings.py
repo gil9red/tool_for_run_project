@@ -47,6 +47,7 @@ def walk_dict(
             walk_dict(value, value_process_func)
 
 
+# TODO: Возможность выполнять несколько блоков кода в одной строке
 PATTERN_CODE_BLOCK = re.compile(r"^\$\{(.+)}$")
 
 
