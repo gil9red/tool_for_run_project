@@ -34,9 +34,12 @@ def do_check_jenkins_job(url: str, version: str):
 
     result = data["result"]
     if not result:
-        raise JenkinsJobCheckException(f"Сборка еще в процессе, прошло {duration_str}.")
+        raise JenkinsJobCheckException(
+            f"Сборка еще в процессе, прошло {duration_str}.\nCсылка: {data['url']}"
+        )
 
     if result != "SUCCESS":
         raise JenkinsJobCheckException(
-            f"Сборка поломанная, обновление прервано. С последнего запуска прошло {duration_str}."
+            f"Сборка поломанная, обновление прервано. "
+            f"С последнего запуска прошло {duration_str}.\nCсылка: {data['url']}"
         )
