@@ -58,13 +58,13 @@ def walk_dict(
             walk_dict(value, value_process_func)
 
 
-PATTERN_CODE = re.compile(r"^\$\{(.+?)}$")
+PATTERN_CODE_BLOCK = re.compile(r"^\$\{(.+)}$")
 
 
 def walk_dir_run_code(_: Any, v: Any) -> Any:
     match v:
         case (str() as value) | [_, str() as value]:
-            if m := PATTERN_CODE.match(value):
+            if m := PATTERN_CODE_BLOCK.match(value):
                 eval_str = m.group(1)
                 try:
                     return eval(eval_str)
