@@ -12,23 +12,12 @@ from pathlib import Path
 from typing import Any, Callable
 
 from core import (
-    GoException,
     AvailabilityEnum,
     is_like_a_version,
     get_similar_value,
     UnknownNameException,
 )
 from third_party.from_ghbdtn import from_ghbdtn
-
-
-def get_func_from_commands(function_name: str) -> Callable:
-    module = __import__("core.commands", fromlist=["commands"])
-    func = getattr(module, function_name)
-    if not callable(func):  # NOTE: Функция или функтор
-        raise GoException(
-            f"Ожидается, что в {function_name!r} ({type(func)}) будет вызываемый объект"
-        )
-    return func
 
 
 # SOURCE: https://stackoverflow.com/a/20666342/5909792
@@ -62,12 +51,20 @@ PATTERN_CODE_BLOCK = re.compile(r"^\$\{(.+)}$")
 
 
 def walk_dir_run_code(_: Any, v: Any) -> Any:
+    # NOTE: Импортировать нужно тут - глобально нельзя
+    import core.commands
+
+    global_vars: dict[str, Any] = {
+        "commands": core.commands,
+        "AvailabilityEnum": core.AvailabilityEnum,
+    }
+
     match v:
         case (str() as value) | [_, str() as value]:
             if m := PATTERN_CODE_BLOCK.match(value):
                 eval_str = m.group(1)
                 try:
-                    return eval(eval_str)
+                    return eval(eval_str, global_vars)
                 except Exception:
                     raise Exception(f"Error on eval {eval_str!r}, original {value!r}")
 

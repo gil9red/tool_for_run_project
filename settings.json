@@ -18,7 +18,7 @@
             "build": "!build_kernel__pause.cmd",
             "update": [
                 "svn update",
-                "${get_func_from_commands('svn_update')}"
+                "${commands.svn_update}"
             ],
             "log": [
                 "svn log",
@@ -36,12 +36,12 @@
                 "svn show modifications dialog",
                 "start /b \"\" TortoiseProc /command:repostatus /path:\"{path}\""
             ],
-            "run": "${get_func_from_commands('run_path')}",
-            "kill": "${get_func_from_commands('kill')}",
-            "processes": "${get_func_from_commands('processes')}",
-            "get_last_release_version": "${get_func_from_commands('get_last_release_version')}",
-            "find_release_versions": "${get_func_from_commands('find_release_versions')}",
-            "find_versions": "${get_func_from_commands('find_versions')}",
+            "run": "${commands.run_path}",
+            "kill": "${commands.kill}",
+            "processes": "${commands.processes}",
+            "get_last_release_version": "${commands.get_last_release_version}",
+            "find_release_versions": "${commands.find_release_versions}",
+            "find_versions": "${commands.find_versions}",
             "trace": "!!trace_viewer.cmd"
         }
     },
@@ -78,8 +78,8 @@
             "what": "${AvailabilityEnum.OPTIONAL}"
         },
         "whats": {
-            "up": "${get_func_from_commands('manager_up')}",
-            "clean": "${get_func_from_commands('manager_clean')}"
+            "up": "${commands.manager_up}",
+            "clean": "${commands.manager_clean}"
         }
     },
     "doc": {
