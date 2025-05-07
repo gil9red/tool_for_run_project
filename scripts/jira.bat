@@ -6,4 +6,5 @@ setlocal
 cd /d %~dp0
 cd /d ..
 
-call python jira.py %*
+set PYTHONPATH=%cd%
+call python core/jira.py %*
