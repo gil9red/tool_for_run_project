@@ -245,7 +245,7 @@ def _print_help():
 
 if __name__ == "__main__":
     args = sys.argv[1:]
-    if not args:
+    if not args or args[0] == "-h":
         _print_help()
 
     run(args)
