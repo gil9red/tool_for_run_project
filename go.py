@@ -44,6 +44,7 @@ RUN:
   go open <name> <version>   - Open dir version
   go open <name>             - Open dir
   go <name>                  - Print versions
+  go -d                      - Print settings
 
 SUPPORTED NAMES:
   {}
@@ -247,5 +248,10 @@ if __name__ == "__main__":
     args = sys.argv[1:]
     if not args or args[0] == "-h":
         _print_help()
+
+    if args and args[0] == "-d":
+        import json
+        print(json.dumps(SETTINGS, indent=4, default=repr))
+        sys.exit()
 
     run(args)
