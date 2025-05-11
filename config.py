@@ -10,8 +10,6 @@ from pathlib import Path
 # TODO: Переменные в config.json
 # TODO:
 JIRA_HOST = "https://helpdesk.compassluxe.com"
-# TODO:
-URL_JENKINS = "http://10.77.204.68:8080"
 
 # TODO:
 # NOTE: Get <PEM_FILE_NAME>: openssl pkcs12 -nodes -out ipetrash.pem -in ipetrash.p12

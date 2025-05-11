@@ -47,17 +47,17 @@ def walk_dict(
             walk_dict(value, value_process_func)
 
 
-# TODO: Возможность выполнять несколько блоков кода в одной строке
 PATTERN_CODE_BLOCK = re.compile(r"^\$\{(.+)}$")
 
 
-def walk_dir_run_code(_: Any, v: Any) -> Any:
+def walk_dir_run_code(_: Any, v: Any, settings: dict[str, Any]) -> Any:
     # NOTE: Импортировать нужно тут - глобально нельзя
     import core.commands
 
     global_vars: dict[str, Any] = {
-        "commands": core.commands,
         "AvailabilityEnum": core.AvailabilityEnum,
+        "commands": core.commands,
+        "self": settings,
     }
 
     match v:
@@ -118,7 +118,7 @@ def settings_preprocess(settings: dict[str, dict]) -> dict[str, dict]:
     for name in private_names:
         new_settings.pop(name)
 
-    walk_dict(new_settings, walk_dir_run_code)
+    walk_dict(new_settings, lambda k, v: walk_dir_run_code(k, v, new_settings))
 
     return new_settings
 

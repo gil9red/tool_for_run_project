@@ -8,7 +8,6 @@ from datetime import datetime
 
 import requests
 
-from config import URL_JENKINS
 from core import GoException
 
 
@@ -17,7 +16,7 @@ class JenkinsJobCheckException(GoException):
 
 
 def do_check_jenkins_job(url: str, version: str):
-    url = url.format(URL_JENKINS=URL_JENKINS, version=version)
+    url = url.format(version=version)
 
     rs = requests.get(url)
     if rs.status_code == 404:
