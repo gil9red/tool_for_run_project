@@ -443,7 +443,7 @@ def resolve_version(name: str, alias: str, versions: list[str] | None = None) ->
     return version
 
 
-def get_file_by_what(name: str, alias: str | None) -> str | tuple[str, str] | None:
+def get_file_by_what(name: str, alias: str | None) -> str | list[str, str] | None:
     whats = resolve_whats(name, alias)
     if not whats:
         return
