@@ -369,7 +369,9 @@ def svn_update(path: str, args: list[str] | None = None, context: RunContext = N
     command_svn = r'start /b "" TortoiseProc /command:update /path:"{path}"'
     command_svn = command_svn.format(path=path)
 
-    print(f"Запуск: {context.description} в {path}")
+    title = f"{context.description} в {path}".strip()
+
+    print(f"Запуск: {title}")
     os.system(command_svn)
 
 
