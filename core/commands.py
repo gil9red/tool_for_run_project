@@ -484,7 +484,7 @@ def go_run(
 
     # Если в <whats> функция, вызываем её
     if callable(value):
-        print(f"Запуск: {name} вызов {what!r}" + (f" ({args})" if args else ""))
+        print(f"Запуск: {name} вызов {what!r}" + (f" ({', '.join(args)})" if args else ""))
         value(path, args, RunContext(context_command))
         return
 
