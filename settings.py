@@ -61,13 +61,19 @@ def walk_dir_run_code(_: Any, v: Any, settings: dict[str, Any]) -> Any:
     }
 
     match v:
-        case (str() as value) | [_, str() as value]:
+        # Или строка, или список из двух строк
+        case (str() as value) | [str(), str() as value]:
             if m := PATTERN_CODE_BLOCK.match(value):
                 eval_str = m.group(1)
                 try:
-                    return eval(eval_str, global_vars)
+                    value = eval(eval_str, global_vars)
                 except Exception:
                     raise Exception(f"Error on eval {eval_str!r}, original {value!r}")
+
+                if isinstance(v, list):
+                    v[1] = value
+                else:
+                    v = value
 
     return v
 
