@@ -5,9 +5,13 @@ __author__ = "ipetrash"
 
 
 import sys
+import os
 import webbrowser
 
-from config import JIRA_HOST
+
+JIRA_HOST: str | None = os.getenv("JIRA_HOST")
+if not JIRA_HOST:
+    raise Exception("JIRA_HOST environment variable is not set!")
 
 
 if len(sys.argv) == 1:

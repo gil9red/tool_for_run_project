@@ -7,4 +7,5 @@ cd /d %~dp0
 cd /d ..
 
 set PYTHONPATH=%cd%
+set JIRA_HOST=https://helpdesk.compassluxe.com
 call python core/jira.py %*
