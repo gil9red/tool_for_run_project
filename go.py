@@ -232,7 +232,7 @@ def run(args: list[str]):
     except GoException as e:
         # Если передан флаг отладки
         if (
-            args[-1].lower().startswith("-d")
+            args[-1].lower().startswith("-d")  # TODO: "-d" уже занято
         ):  # TODO: Выводить про этот флаг вместе с ошибкой в else
             print(traceback.format_exc())
         else:
