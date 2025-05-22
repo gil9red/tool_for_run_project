@@ -209,12 +209,12 @@ def run(args: list[str]):
 
     except GoException as e:
         # Если передан флаг отладки
-        if (
-            args[-1].lower().startswith("-d")  # TODO: "-d" уже занято
-        ):  # TODO: Выводить про этот флаг вместе с ошибкой в else
+        show_exception_flag = "-e"
+        if args[-1].lower().startswith(show_exception_flag):
             print(traceback.format_exc())
         else:
             print(e)
+            print(f"Повтори с флагом {show_exception_flag} - чтобы увидеть ошибку с стеком")
 
 
 def _print_help():
