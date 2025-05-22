@@ -7,6 +7,7 @@ __author__ = "ipetrash"
 import copy
 import json
 import re
+import os
 
 from pathlib import Path
 from typing import Any, Callable
@@ -18,6 +19,14 @@ from core import (
     UnknownNameException,
 )
 from third_party.from_ghbdtn import from_ghbdtn
+
+
+if path_settings_value := os.getenv("PATH_SETTINGS"):
+    PATH_SETTINGS = Path(path_settings_value).resolve()
+else:
+    PATH_SETTINGS = Path(__file__).parent.resolve() / "settings.json"
+
+__SETTINGS = json.loads(PATH_SETTINGS.read_text(encoding="utf-8"))
 
 
 # SOURCE: https://stackoverflow.com/a/20666342/5909792
@@ -76,11 +85,6 @@ def walk_dir_run_code(_: Any, v: Any, settings: dict[str, Any]) -> Any:
                     v = value
 
     return v
-
-
-# TODO: В конфиг или в переменную окружения?
-PATH_SETTINGS = Path(__file__).parent.resolve() / "settings.json"
-__SETTINGS = json.loads(PATH_SETTINGS.read_text(encoding="utf-8"))
 
 
 def get_versions_by_path(path: str) -> dict[str, str]:
