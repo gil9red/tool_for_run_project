@@ -5,7 +5,6 @@ __author__ = "ipetrash"
 
 
 import re
-from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Iterable
 
