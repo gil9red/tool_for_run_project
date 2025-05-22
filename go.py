@@ -194,18 +194,23 @@ def run(args: list[str]):
             command.run()
 
     except ParameterAvailabilityException as e:
-        name = e.command.name
-        settings = get_settings(name)
+        name: str = e.command.name
+        settings: dict = get_settings(name)
+        options: dict = settings["options"]
 
         # Если для сущности параметр версии возможен
-        if settings["options"]["version"] != AvailabilityEnum.PROHIBITED:
+        if options["version"] != AvailabilityEnum.PROHIBITED:
             supported_versions = ", ".join(sorted(settings["versions"]))
             print(f"Поддерживаемые версии: {supported_versions}")
+            return
 
         # Если для сущности параметр what возможен
-        if settings["options"]["what"] != AvailabilityEnum.PROHIBITED:
+        if options["what"] != AvailabilityEnum.PROHIBITED:
             supported_whats = ", ".join(sorted(settings["whats"]))
             print(f"Поддерживаемые <what>: {supported_whats}")
+            return
+
+        print(e)
 
     except GoException as e:
         # Если передан флаг отладки
