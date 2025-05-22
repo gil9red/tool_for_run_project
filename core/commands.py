@@ -10,6 +10,7 @@ import shutil
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from typing import Callable
 
 import psutil
 
@@ -39,6 +40,9 @@ from core.svn.get_last_release_version import (
 from core.svn.search_by_versions import search as search_by_versions
 from settings import get_settings, get_path_by_name
 from third_party.from_ghbdtn import from_ghbdtn
+
+
+WhatValue = str | list[str, str | Callable] | dict | Callable | None
 
 
 def run_file(file_name: str):
@@ -73,6 +77,10 @@ class Command:
     what: str | None = None
     args: list[str] | None = None
 
+    def __post_init__(self):
+        if self.args is None:
+            self.args = []
+
     def _check_parameter(self, param: str):
         settings = get_settings(self.name)
 
@@ -99,8 +107,60 @@ class Command:
         self._check_parameter("what")
         self._check_parameter("args")
 
-        # TODO: Переписать do_run для использования только Command
-        go_run(self.name, self.version, self.what, self.args, self)
+        # Если по <name> указывается файл, то сразу его и запускаем
+        path: str = get_path_by_name(self.name)
+        value: WhatValue = get_file_by_what(self.name, self.what)
+
+        # Если по <name> указывается файл, то сразу его и запускаем
+        if (
+            (os.path.isfile(path) and not self.what and not self.args)
+            or all_options_is_prohibited(self.name)
+        ):
+            run_file(path)
+            return
+
+        if self.version:
+            path = get_similar_version_path(self.name, self.version)
+
+        # Если в <whats> функция, вызываем её
+        if callable(value):
+            print(
+                f"Запуск: {self.name} вызов {self.what!r}"
+                + (f" ({', '.join(self.args)})" if self.args else "")
+            )
+            value(path, self.args, RunContext(self))
+            return
+
+        dir_file_name = get_similar_version_path(self.name, self.version)
+
+        # Move to active dir
+        os.chdir(dir_file_name)
+
+        # Получение из аргументов
+        if isinstance(value, dict):
+            arg = self.args[0] if self.args else ""
+            if not arg:
+                arg = value["__default__"]
+
+            value = value[arg]
+
+        if isinstance(value, str):
+            file_name = dir_file_name + "/" + value
+            run_file(file_name)
+            return
+
+        description, command = value
+
+        # Если функция - вызываем
+        if callable(command):
+            command(path, self.args, RunContext(self, description))
+            return
+
+        find_string = self.args[0] if self.args else ""
+        command = command.format(path=dir_file_name, find_string=find_string)
+
+        print(f"Запуск: {description} в {dir_file_name}")
+        os.system(command)
 
 
 @dataclass
@@ -456,7 +516,7 @@ def resolve_version(name: str, alias: str, versions: list[str] | None = None) ->
     return version
 
 
-def get_file_by_what(name: str, alias: str | None) -> str | list[str, str] | None:
+def get_file_by_what(name: str, alias: str | None) -> WhatValue:
     whats = resolve_whats(name, alias)
     if not whats:
         return
@@ -468,68 +528,3 @@ def get_similar_version_path(name: str, version: str) -> str:
     supported = get_settings(name)["versions"]
     version = resolve_version(name, version, supported)
     return supported[version]
-
-
-def go_run(
-    name: str,
-    version: str | None = None,
-    what: str | None = None,
-    args: list[str] | None = None,
-    context_command: Command = None,
-):
-    if args is None:
-        args = []
-
-    # Если по <name> указывается файл, то сразу его и запускаем
-    path = get_path_by_name(name)
-    value = get_file_by_what(name, what)
-
-    # Если по <name> указывается файл, то сразу его и запускаем
-    if (
-        (os.path.isfile(path) and not what and not args)
-        or all_options_is_prohibited(name)
-    ):
-        run_file(path)
-        return
-
-    if version:
-        path = get_similar_version_path(name, version)
-
-    # Если в <whats> функция, вызываем её
-    if callable(value):
-        print(
-            f"Запуск: {name} вызов {what!r}" + (f" ({', '.join(args)})" if args else "")
-        )
-        value(path, args, RunContext(context_command))
-        return
-
-    dir_file_name = get_similar_version_path(name, version)
-
-    # Move to active dir
-    os.chdir(dir_file_name)
-
-    # Получение из аргументов
-    if isinstance(value, dict):
-        arg = args[0] if args else ""
-        if not arg:
-            arg = value["__default__"]
-
-        value = value[arg]
-
-    if isinstance(value, str):
-        file_name = dir_file_name + "/" + value
-        run_file(file_name)
-        return
-
-    description, command = value
-
-    # Если функция - вызываем
-    if callable(command):
-        command(path, args, RunContext(context_command, description))
-        return
-
-    find_string = args[0] if args else ""
-    command = command.format(path=dir_file_name, find_string=find_string)
-
-    print(f"Запуск: {description} в {dir_file_name}")
-    os.system(command)
