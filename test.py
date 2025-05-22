@@ -4,11 +4,17 @@
 __author__ = "ipetrash"
 
 
-from go import from_ghbdtn
 from core.commands import resolve_whats, resolve_version, get_similar_version_path
 from core import is_like_a_version
-from settings import SETTINGS, resolve_name
 
+import settings
+from settings import resolve_name
+
+from third_party.from_ghbdtn import from_ghbdtn
+
+
+settings.run_settings_preprocess()
+SETTINGS = settings.SETTINGS
 
 # TODO: unittest
 
