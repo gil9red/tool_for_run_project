@@ -423,7 +423,7 @@ def resolve_version(name: str, alias: str, versions: list[str] | None = None) ->
         base_version = settings.get("base_version")
         if not base_version:
             text = (
-                f'Атрибут "base_settings", используемый с короткой версией (="{alias}"), '
+                f'Атрибут "base_version", используемый с короткой версией (="{alias}"), '
                 f'должен быть определен в SETTINGS для "{name}"'
             )
             raise GoException(text)
