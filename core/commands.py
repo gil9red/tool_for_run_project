@@ -103,9 +103,8 @@ class Command:
                 self.name, settings["options"]["default_version"]
             )
 
-        self._check_parameter("version")
-        self._check_parameter("what")
-        self._check_parameter("args")
+        for param in ["version", "what", "args"]:
+            self._check_parameter(param)
 
         # Если по <name> указывается файл, то сразу его и запускаем
         path: str = get_path_by_name(self.name)
