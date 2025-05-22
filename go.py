@@ -234,6 +234,8 @@ if __name__ == "__main__":
 
     if args and args[0] == "-d":
         import json
+        from settings import PATH_SETTINGS
+        print(PATH_SETTINGS)
         print(json.dumps(SETTINGS, indent=4, default=repr))
         sys.exit()
 
