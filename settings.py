@@ -78,7 +78,7 @@ def walk_dir_run_code(_: Any, v: Any, settings: dict[str, Any]) -> Any:
     return v
 
 
-# TODO: В конфиг
+# TODO: В конфиг или в переменную окружения?
 PATH_SETTINGS = Path(__file__).parent.resolve() / "settings.json"
 __SETTINGS = json.loads(PATH_SETTINGS.read_text(encoding="utf-8"))
 
