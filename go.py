@@ -22,15 +22,11 @@ settings.run_settings_preprocess()
 SETTINGS = settings.SETTINGS
 
 from core.commands import (
-    open_dir,
     Command,
     resolve_whats,
     resolve_version,
-    get_similar_version_path,
 )
-from settings import get_settings, resolve_name, get_path_by_name
-
-from third_party.from_ghbdtn import from_ghbdtn
+from settings import get_settings, resolve_name
 
 
 def has_similar_value(alias: str, items: list) -> bool:
@@ -41,8 +37,8 @@ ABOUT_TEXT = r"""
 RUN:
   go <name> <version> <what> - Run tool
   go <name> <what>           - Run tool (trunk version)
-  go open <name> <version>   - Open dir version
-  go open <name>             - Open dir
+  go <name> open <version>   - Open dir version
+  go <name> open             - Open dir
   go <name>                  - Print versions
   go -d                      - Print settings
 
@@ -194,24 +190,6 @@ def parse_cmd_args(args: list[str]) -> list[Command]:
 
 def run(args: list[str]):
     try:
-        # TODO: Можно ли перенести в SETTINGS?
-        if args[0] in ["open", from_ghbdtn("open")]:
-            args.pop(0)
-
-            if len(args) == 1:
-                path = get_path_by_name(args[0])
-                open_dir(path)
-
-            elif len(args) >= 2:
-                name, version = args[:2]
-                path = get_similar_version_path(name, version)
-                open_dir(path)
-
-            else:
-                _print_help()
-
-            return
-
         for command in parse_cmd_args(args):
             command.run()
 

@@ -33,7 +33,9 @@ from core.kill import (
     is_designer,
 )
 from core.svn.find_release_version import find_release_version
-from core.svn.get_last_release_version import get_last_release_version
+from core.svn.get_last_release_version import (
+    get_last_release_version as get_last_release_version_svn,
+)
 from core.svn.search_by_versions import search as search_by_versions
 from settings import get_settings, get_path_by_name
 from third_party.from_ghbdtn import from_ghbdtn
@@ -131,6 +133,15 @@ def run_path(path: str, args: list[str] | None = None, context: RunContext = Non
     run_file(file_name)
 
 
+def open_path(path: str, args: list[str] | None = None, context: RunContext = None):
+    if not context:
+        raise GoException("Что-то пошло не так при вызове 'open' - context is None")
+
+    command = context.command
+    path = get_similar_version_path(command.name, command.version)
+    open_dir(path)
+
+
 def kill(path: str, args: list[str] | None = None, context: RunContext = None):
     pids = []
 
@@ -222,7 +233,7 @@ def get_last_release_version(
     url_svn_path = get_settings(command.name)["svn_dev_url"]
 
     try:
-        result = get_last_release_version(
+        result = get_last_release_version_svn(
             version=version,
             last_days=last_days,
             url_svn_path=url_svn_path,
@@ -486,7 +497,9 @@ def go_run(
 
     # Если в <whats> функция, вызываем её
     if callable(value):
-        print(f"Запуск: {name} вызов {what!r}" + (f" ({', '.join(args)})" if args else ""))
+        print(
+            f"Запуск: {name} вызов {what!r}" + (f" ({', '.join(args)})" if args else "")
+        )
         value(path, args, RunContext(context_command))
         return
 

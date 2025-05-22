@@ -37,6 +37,7 @@
                 "start /b \"\" TortoiseProc /command:repostatus /path:\"{path}\""
             ],
             "run": "${commands.run_path}",
+            "open": "${commands.open_path}",
             "kill": "${commands.kill}",
             "processes": "${commands.processes}",
             "get_last_release_version": "${commands.get_last_release_version}",
