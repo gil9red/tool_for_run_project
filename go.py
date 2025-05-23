@@ -26,7 +26,7 @@ from core.commands import (
     resolve_whats,
     resolve_version,
 )
-from settings import get_settings, resolve_name
+from settings import get_project, resolve_name
 
 
 def has_similar_value(alias: str, items: list) -> bool:
@@ -127,7 +127,7 @@ def parse_cmd_args(args: list[str]) -> list[Command]:
         name = args.pop(0).lower()
         name = resolve_name(name)
 
-    options = get_settings(name)["options"]
+    options = get_project(name)["options"]
     maybe_version = options["version"] != AvailabilityEnum.PROHIBITED
     maybe_what = options["what"] != AvailabilityEnum.PROHIBITED
 
@@ -151,7 +151,7 @@ def parse_cmd_args(args: list[str]) -> list[Command]:
                 end = resolve_version(name, end)
 
                 found = False
-                for version in get_settings(name)["versions"]:
+                for version in get_project(name)["versions"]:
                     if start == version:
                         found = True
 
@@ -195,7 +195,7 @@ def run(args: list[str]):
 
     except ParameterAvailabilityException as e:
         name: str = e.command.name
-        settings: dict = get_settings(name)
+        settings: dict = get_project(name)
         options: dict = settings["options"]
 
         # Если для сущности параметр версии возможен

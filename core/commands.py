@@ -38,7 +38,7 @@ from core.svn.get_last_release_version import (
     get_last_release_version as get_last_release_version_svn,
 )
 from core.svn.search_by_versions import search as search_by_versions
-from settings import get_settings, get_path_by_name
+from settings import get_project, get_path_by_name
 from third_party.from_ghbdtn import from_ghbdtn
 
 
@@ -82,7 +82,7 @@ class Command:
             self.args = []
 
     def _check_parameter(self, param: str):
-        settings = get_settings(self.name)
+        settings = get_project(self.name)
 
         value = getattr(self, param)
         settings_param = settings["options"][param]
@@ -95,7 +95,7 @@ class Command:
                 raise ParameterAvailabilityException(self, param, settings_param)
 
     def run(self):
-        settings = get_settings(self.name)
+        settings = get_project(self.name)
 
         settings_version = settings["options"]["version"]
         if settings_version == AvailabilityEnum.OPTIONAL and not self.version:
@@ -289,7 +289,7 @@ def get_last_release_version(
     if args and args[0].isdigit():
         last_days = int(args[0])
 
-    url_svn_path = get_settings(command.name)["svn_dev_url"]
+    url_svn_path = get_project(command.name)["svn_dev_url"]
 
     try:
         result = get_last_release_version_svn(
@@ -324,7 +324,7 @@ def find_release_versions(
     command = context.command
     version = command.version
 
-    url_svn_path = get_settings(command.name)["svn_dev_url"]
+    url_svn_path = get_project(command.name)["svn_dev_url"]
 
     try:
         result = find_release_version(
@@ -357,7 +357,7 @@ def find_versions(
     if len(args) > 1 and args[1].isdigit():
         last_days = int(args[1])
 
-    url_svn_path = get_settings(command.name)["svn_dev_url"]
+    url_svn_path = get_project(command.name)["svn_dev_url"]
 
     try:
         versions = search_by_versions(
@@ -424,7 +424,7 @@ def svn_update(path: str, args: list[str] | None = None, context: RunContext = N
         force = True
 
     command = context.command
-    settings = get_settings(command.name)
+    settings = get_project(command.name)
 
     jenkins_url = settings.get("jenkins_url")
     if jenkins_url:
@@ -446,7 +446,7 @@ def svn_update(path: str, args: list[str] | None = None, context: RunContext = N
 
 
 def all_options_is_prohibited(name: str) -> bool:
-    options = get_settings(name)["options"]
+    options = get_project(name)["options"]
     return (
         options["version"] == AvailabilityEnum.PROHIBITED
         and options["what"] == AvailabilityEnum.PROHIBITED
@@ -459,7 +459,7 @@ def resolve_whats(name: str, alias: str | None) -> list[str]:
     if not alias:
         return items
 
-    supported = list(get_settings(name)["whats"])
+    supported = list(get_project(name)["whats"])
     shadow_supported = {from_ghbdtn(x): x for x in supported}
 
     for alias_what in alias.split("+"):
@@ -480,7 +480,7 @@ def resolve_whats(name: str, alias: str | None) -> list[str]:
 
 
 def resolve_version(name: str, alias: str, versions: list[str] | None = None) -> str:
-    settings = get_settings(name)
+    settings = get_project(name)
 
     supported = versions
     if not supported:
@@ -520,10 +520,10 @@ def get_file_by_what(name: str, alias: str | None) -> WhatValue:
     if not whats:
         return
     what = whats[0]
-    return get_settings(name)["whats"][what]
+    return get_project(name)["whats"][what]
 
 
 def get_similar_version_path(name: str, version: str) -> str:
-    supported = get_settings(name)["versions"]
+    supported = get_project(name)["versions"]
     version = resolve_version(name, version, supported)
     return supported[version]

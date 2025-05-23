@@ -141,7 +141,7 @@ def run_settings_preprocess():
     SETTINGS = settings_preprocess(__SETTINGS)
 
 
-def get_settings(name: str) -> dict:
+def get_project(name: str) -> dict:
     name = resolve_name(name)
     return SETTINGS[name]
 
@@ -165,5 +165,5 @@ def resolve_name(alias: str) -> str:
 
 
 def get_path_by_name(name: str) -> str:
-    settings = get_settings(name)
+    settings = get_project(name)
     return settings["path"]
