@@ -70,6 +70,15 @@ def open_dir(path: str):
     os.startfile(dir_file_name)
 
 
+def all_options_is_prohibited(name: str) -> bool:
+    options = get_project(name)["options"]
+    return (
+        options["version"] == AvailabilityEnum.PROHIBITED
+        and options["what"] == AvailabilityEnum.PROHIBITED
+        and options["args"] == AvailabilityEnum.PROHIBITED
+    )
+
+
 @dataclass
 class Command:
     name: str
@@ -443,15 +452,6 @@ def svn_update(path: str, args: list[str] | None = None, context: RunContext = N
 
     print(f"Запуск: {title}")
     os.system(command_svn)
-
-
-def all_options_is_prohibited(name: str) -> bool:
-    options = get_project(name)["options"]
-    return (
-        options["version"] == AvailabilityEnum.PROHIBITED
-        and options["what"] == AvailabilityEnum.PROHIBITED
-        and options["args"] == AvailabilityEnum.PROHIBITED
-    )
 
 
 def resolve_whats(name: str, alias: str | None) -> list[str]:
