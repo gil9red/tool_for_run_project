@@ -11,7 +11,6 @@ from core import (
     GoException,
     ParameterAvailabilityException,
     AvailabilityEnum,
-    get_similar_value,
     is_like_a_version,
 )
 
@@ -27,10 +26,6 @@ from core.commands import (
     resolve_version,
 )
 from settings import get_project, resolve_name
-
-
-def has_similar_value(alias: str, items: list) -> bool:
-    return get_similar_value(alias, items) is not None
 
 
 ABOUT_TEXT = r"""
@@ -219,7 +214,9 @@ def run(args: list[str]):
             print(traceback.format_exc())
         else:
             print(e)
-            print(f"Повтори с флагом {show_exception_flag} - чтобы увидеть ошибку с стеком")
+            print(
+                f"Повтори с флагом {show_exception_flag} - чтобы увидеть ошибку с стеком"
+            )
 
 
 def _print_help():
@@ -235,6 +232,7 @@ if __name__ == "__main__":
     if args and args[0] == "-d":
         import json
         from settings import PATH_SETTINGS
+
         print(PATH_SETTINGS)
         print(json.dumps(SETTINGS, indent=4, default=repr))
         sys.exit()
