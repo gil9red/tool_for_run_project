@@ -70,15 +70,6 @@ def open_dir(path: str):
     os.startfile(dir_file_name)
 
 
-def all_options_is_prohibited(name: str) -> bool:
-    options = get_project(name)["options"]
-    return (
-        options["version"] == AvailabilityEnum.PROHIBITED
-        and options["what"] == AvailabilityEnum.PROHIBITED
-        and options["args"] == AvailabilityEnum.PROHIBITED
-    )
-
-
 @dataclass
 class Command:
     name: str
@@ -104,15 +95,16 @@ class Command:
                 raise ParameterAvailabilityException(self, param, settings_param)
 
     def run(self):
-        settings = get_project(self.name)
+        settings: dict = get_project(self.name)
+        options: dict = settings["options"]
 
-        settings_version = settings["options"]["version"]
-        if settings_version == AvailabilityEnum.OPTIONAL and not self.version:
+        if options["version"] == AvailabilityEnum.OPTIONAL and not self.version:
             self.version = resolve_version(
-                self.name, settings["options"]["default_version"]
+                self.name, options["default_version"]
             )
 
-        for param in ["version", "what", "args"]:
+        settings_params = ["version", "what", "args"]
+        for param in settings_params:
             self._check_parameter(param)
 
         # Если по <name> указывается файл, то сразу его и запускаем
@@ -122,7 +114,10 @@ class Command:
         # Если по <name> указывается файл, то сразу его и запускаем
         if (
             (os.path.isfile(path) and not self.what and not self.args)
-            or all_options_is_prohibited(self.name)
+            or all(
+                options[param] == AvailabilityEnum.PROHIBITED
+                for param in settings_params
+            )
         ):
             run_file(path)
             return
