@@ -26,7 +26,7 @@ class UnknownNameException(GoException):
         self.name = name
         self.supported = list(sorted(supported))
 
-        super().__init__(f"Unknown name {self.name!r}, supported: {self.supported}")
+        super().__init__(f"Неизвестное имя {self.name!r}, поддержано: {self.supported}")
 
 
 class UnknownWhatException(GoException):
@@ -34,7 +34,9 @@ class UnknownWhatException(GoException):
         self.what = what
         self.supported = list(sorted(supported))
 
-        super().__init__(f"Unknown what {self.what!r}, supported: {self.supported}")
+        super().__init__(
+            f"Неизвестное действие {self.what!r}, поддержано: {self.supported}"
+        )
 
 
 class UnknownVersionException(GoException):
@@ -43,7 +45,7 @@ class UnknownVersionException(GoException):
         self.supported = list(supported)
 
         super().__init__(
-            f"Unknown version {self.version!r}, supported: {self.supported}"
+            f"Неизвестная версия {self.version!r}, поддержано: {self.supported}"
         )
 
 
@@ -52,7 +54,9 @@ class ParameterMissingException(GoException):
         self.name = name
         self.param = param
 
-        super().__init__(f"For {self.name!r} the value <{self.param}> must not be set!")
+        super().__init__(
+            f"Для {self.name!r} значение <{self.param}> не должно быть установлено!"
+        )
 
 
 class ParameterAvailabilityException(GoException):
