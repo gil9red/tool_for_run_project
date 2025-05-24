@@ -4,8 +4,8 @@
 __author__ = "ipetrash"
 
 
+import json
 import os
-import shutil
 
 from pathlib import Path
 from unittest import TestCase
@@ -16,8 +16,6 @@ DIR: Path = Path(__file__).parent.resolve()
 DIR_ENV: Path = DIR / "env"
 DIR_ENV.mkdir(parents=True, exist_ok=True)
 
-# TODO: Тут и создать папку с файлами для тестовой настройки
-# TODO: Заполнить пути от текущего пути
 SETTINGS_TEMPLATE_JSON: str = r"""
 {
     "__radix_base": {
@@ -29,14 +27,11 @@ SETTINGS_TEMPLATE_JSON: str = r"""
         },
         "whats": {
             "designer": "!!designer.cmd",
-            "explorer": "!!explorer.cmd",
             "server": {
                 "__default__": "ora",
                 "ora": "!!server.cmd",
                 "pg": "!!server-postgres.cmd"
             },
-            "compile": "!build_ads__pause.bat",
-            "build": "!build_kernel__pause.cmd",
             "update": [
                 "svn update",
                 "${commands.svn_update}"
@@ -44,50 +39,25 @@ SETTINGS_TEMPLATE_JSON: str = r"""
             "log": [
                 "svn log",
                 "start /b \"\" TortoiseProc /command:log /path:\"{path}\" /findstring:\"{find_string}\""
-            ],
-            "cleanup": [
-                "svn cleanup",
-                "start /b \"\" TortoiseProc /command:cleanup /path:\"{path}\" /cleanup /nodlg /closeonend:2"
-            ],
-            "revert": [
-                "svn revert",
-                "start /b \"\" TortoiseProc /command:revert /path:\"{path}\""
-            ],
-            "modifications": [
-                "svn show modifications dialog",
-                "start /b \"\" TortoiseProc /command:repostatus /path:\"{path}\""
-            ],
-            "run": "${commands.run_path}",
-            "open": "${commands.open_path}",
-            "kill": "${commands.kill}",
-            "processes": "${commands.processes}",
-            "get_last_release_version": "${commands.get_last_release_version}",
-            "find_release_versions": "${commands.find_release_versions}",
-            "find_versions": "${commands.find_versions}",
-            "trace": "!!trace_viewer.cmd"
+            ]
         },
         "vars": {
-            "URL_JENKINS": "http://10.77.204.68:8080"
+            "URL_JENKINS": "http://127.0.0.1:8080"
         }
-    },
-    "radix": {
-        "base": "__radix_base",
-        "path": "C:/DEV__RADIX",
-        "base_version": "2.1."
     },
     "tx": {
         "base": "__radix_base",
         "path": "C:/DEV__TX",
         "base_version": "3.2.",
         "jenkins_url": "${self['tx']['vars']['URL_JENKINS'] + '/job/assemble_tx/branch={version},label=lightweight/lastBuild/api/json?tree=result,timestamp,url'}",
-        "svn_dev_url": "svn+cplus://svn2.compassplus.ru/twrbs/trunk/dev"
+        "svn_dev_url": "svn://127.0.0.1/tx/dev/trunk"
     },
     "optt": {
         "base": "__radix_base",
         "path": "C:/DEV__OPTT",
         "base_version": "2.1.",
         "jenkins_url": "${self['optt']['vars']['URL_JENKINS'] + '/job/OPTT_{version}_build/lastBuild/api/json?tree=result,timestamp,url'}",
-        "svn_dev_url": "svn+cplus://svn2.compassplus.ru/twrbs/csm/optt/dev"
+        "svn_dev_url": "svn://127.0.0.1/optt/dev/trunk"
     },
     "__simple_base": {
         "options": {
@@ -107,9 +77,9 @@ SETTINGS_TEMPLATE_JSON: str = r"""
             "clean": "${commands.manager_clean}"
         }
     },
-    "doc": {
+    "file": {
         "base": "__simple_base",
-        "path": "C:/Program Files (x86)/DocFetcher/DocFetcher.exe"
+        "path": "C:/txt/1.txt"
     },
     "specifications": {
         "base": "__simple_base",
@@ -118,75 +88,282 @@ SETTINGS_TEMPLATE_JSON: str = r"""
 }
 """
 
+SETTINGS_TEMPLATE_JSON = SETTINGS_TEMPLATE_JSON.replace(
+    "C:/", (str(DIR_ENV) + "\\").replace("\\", "\\\\")
+)
+
+SETTINGS_TEMPLATE = json.loads(SETTINGS_TEMPLATE_JSON)
+for name in ["tx", "optt"]:
+    project = SETTINGS_TEMPLATE[name]["path"]
+    default_version = SETTINGS_TEMPLATE["__radix_base"]["options"]["default_version"]
+    base_version = SETTINGS_TEMPLATE[name]["base_version"]
+
+    for version in [default_version] + [f"{base_version}{i}" for i in range(1, 4)]:
+        for file_name in ["!!designer.cmd", "!!server.cmd", "!!server-postgres.cmd"]:
+            d = DIR_ENV / project / version
+            d.mkdir(parents=True, exist_ok=True)
+            (d / file_name).touch(exist_ok=True)
+
 PATH_TEST_SETTINGS: Path = DIR_ENV / "test-settings.json"
 PATH_TEST_SETTINGS.write_text(SETTINGS_TEMPLATE_JSON, encoding="utf-8")
 
 # NOTE: Установка переменной окружения до импорта модулей, который явно или не явно импортируют модуль settings.py
 os.environ["PATH_SETTINGS"] = str(PATH_TEST_SETTINGS)
 
-from core.commands import resolve_whats, resolve_version, get_similar_version_path
-from core import is_like_a_version
+import go
 
+from core.commands import (
+    resolve_whats,
+    resolve_version,
+    get_similar_version_path,
+    get_file_by_what,
+)
+from core import (
+    UnknownWhatException,
+    is_like_a_version,
+    get_similar_value,
+    is_like_a_short_version,
+)
+
+from core import commands
 import settings
-from settings import resolve_name
 
-from third_party.from_ghbdtn import from_ghbdtn
-
-
-settings.run_settings_preprocess()
-SETTINGS = settings.SETTINGS
+SETTINGS = go.SETTINGS
 
 
-# TODO:
-# class TestCommon(TestCase):
-#     def test_resolve_name(self):
-#         for k in SETTINGS:
-#             assert resolve_name(k) == k
-#             assert resolve_name(from_ghbdtn(k)) == k
-#         assert resolve_name("t") == "tx"
-#         assert resolve_name("tx") == "tx"
-#         assert resolve_name("еч") == "tx"
-#         assert resolve_name("щзе") == "optt"
-#         assert resolve_name("o") == "optt"
-#         assert resolve_name("optt") == "optt"
+class TestCommon(TestCase):
+    def test_override_base(self):
+        self.assertEqual(
+            SETTINGS["manager"]["options"]["what"],
+            go.AvailabilityEnum.OPTIONAL,
+        )
+        self.assertEqual(
+            SETTINGS["file"]["options"]["what"],
+            go.AvailabilityEnum.PROHIBITED,
+        )
+        self.assertEqual(
+            SETTINGS["specifications"]["options"]["what"],
+            go.AvailabilityEnum.PROHIBITED,
+        )
+
+    def test_is_like_a_version(self):
+        self.assertTrue(is_like_a_version("trunk"))
+        self.assertTrue(is_like_a_version("екгтл"))
+        self.assertTrue(is_like_a_version("екг"))
+        self.assertTrue(is_like_a_version("trunk-екгтл"))
+        self.assertTrue(is_like_a_version("trunk,екгтл"))
+        self.assertTrue(is_like_a_version("3.2.22-trunk"))
+        self.assertTrue(is_like_a_version("3.2.22-екгтл"))
+        self.assertTrue(is_like_a_version("3.2.22"))
+        self.assertTrue(is_like_a_version("3.2.22.10"))
+        self.assertTrue(is_like_a_version("22"))
+        self.assertTrue(is_like_a_version("22,23,24"))
+        self.assertTrue(is_like_a_version("22,23,trunk"))
+        self.assertTrue(is_like_a_version("22,23,t"))
+        self.assertTrue(is_like_a_version("22,23,екгтл"))
+        self.assertTrue(is_like_a_version("22,23,е"))
+
+    def test_get_similar_value(self):
+        items = ["server", "designer", "explorer"]
+        self.assertEqual(get_similar_value("server", items), "server")
+        self.assertEqual(get_similar_value("ser", items), "server")
+        self.assertEqual(get_similar_value("s", items), "server")
+
+    def test_is_like_a_short_version(self):
+        self.assertTrue(is_like_a_short_version("22"))
+        self.assertFalse(is_like_a_short_version("3.2.22"))
 
 
-resolve_what = lambda alias: resolve_whats("tx", alias)[0]
+class TestSettings(TestCase):
+    def test_get_versions_by_path(self):
+        path = settings.get_path_by_name("tx")
+        self.assertEqual(
+            sorted(settings.get_versions_by_path(path).keys()),
+            sorted(["3.2.1", "3.2.2", "3.2.3", "trunk"]),
+        )
 
-for k in SETTINGS["tx"]["whats"]:
-    assert resolve_what(k) == k
-    assert resolve_what(from_ghbdtn(k)) == k
-assert resolve_what("d") == "designer"
-assert resolve_what("в") == "designer"
-assert resolve_what("вуы") == "designer"
-assert resolve_what("e") == "explorer"
-assert resolve_what("b") == "build"
+        path = settings.get_path_by_name("optt")
+        self.assertEqual(
+            sorted(settings.get_versions_by_path(path).keys()),
+            sorted(["2.1.1", "2.1.2", "2.1.3", "trunk"]),
+        )
 
-# TODO: Зависит от окружения - без папок локально не работает
-assert resolve_version("tx", "trunk") == "trunk"
-assert resolve_version("tx", "tr") == "trunk"
-assert resolve_version("еч", "trunk") == "trunk"
-assert resolve_version("optt", "trunk") == "trunk"
-assert resolve_version("щзе", "trunk") == "trunk"
-assert resolve_version("tx", "екгтл") == "trunk"
-assert resolve_version("tx", "ек") == "trunk"
+    def test_get_project(self):
+        self.assertIsNotNone(settings.get_project("tx"))
+        self.assertIsNotNone(settings.get_project("t"))
+        self.assertIsNotNone(settings.get_project("еч"))
+        self.assertIsNotNone(settings.get_project("е"))
 
-# TODO: Зависит от окружения - без папок локально не работает
-assert get_similar_version_path("tx", "trunk")
-assert get_similar_version_path("tx", "tru")
-assert get_similar_version_path("tx", "екгтл")
-assert get_similar_version_path("tx", "екг")
-assert get_similar_version_path("еч", "trunk")
-assert get_similar_version_path("еч", "екгтл")
+        self.assertIsNotNone(settings.get_project("optt"))
+        self.assertIsNotNone(settings.get_project("o"))
+        self.assertIsNotNone(settings.get_project("op"))
+        self.assertIsNotNone(settings.get_project("щзее"))
+        self.assertIsNotNone(settings.get_project("щ"))
+        self.assertIsNotNone(settings.get_project("щз"))
 
-assert is_like_a_version("trunk")
-assert is_like_a_version("екгтл")
-assert is_like_a_version("екг")
-assert is_like_a_version("trunk-екгтл")
-assert is_like_a_version("trunk,екгтл")
-assert is_like_a_version("3.2.22-trunk")
-assert is_like_a_version("3.2.22-екгтл")
-assert is_like_a_version("3.2.22")
-assert is_like_a_version("3.2.22.10")
+    def test_resolve_name(self):
+        self.assertEqual(settings.resolve_name("t"), "tx")
+        self.assertEqual(settings.resolve_name("tx"), "tx")
+        self.assertEqual(settings.resolve_name("еч"), "tx")
+        self.assertEqual(settings.resolve_name("щзе"), "optt")
+        self.assertEqual(settings.resolve_name("o"), "optt")
+        self.assertEqual(settings.resolve_name("optt"), "optt")
 
-shutil.rmtree(DIR_ENV)
+    def test_get_path_by_name(self):
+        self.assertIsNotNone(settings.get_path_by_name("tx"))
+        self.assertIsNotNone(settings.get_path_by_name("t"))
+        self.assertIsNotNone(settings.get_path_by_name("еч"))
+        self.assertIsNotNone(settings.get_path_by_name("е"))
+
+        self.assertIsNotNone(settings.get_path_by_name("optt"))
+        self.assertIsNotNone(settings.get_path_by_name("o"))
+        self.assertIsNotNone(settings.get_path_by_name("op"))
+        self.assertIsNotNone(settings.get_path_by_name("щзее"))
+        self.assertIsNotNone(settings.get_path_by_name("щ"))
+        self.assertIsNotNone(settings.get_path_by_name("щз"))
+
+
+class TestCommands(TestCase):
+    def test_resolve_whats(self):
+        self.assertEqual(resolve_whats("tx", "designer"), ["designer"])
+        self.assertEqual(resolve_whats("tx", "des"), ["designer"])
+        self.assertEqual(resolve_whats("tx", "d"), ["designer"])
+        self.assertEqual(resolve_whats("tx", "вуышптук"), ["designer"])
+        self.assertEqual(resolve_whats("tx", "вуы"), ["designer"])
+        self.assertEqual(resolve_whats("tx", "в"), ["designer"])
+
+        self.assertEqual(resolve_whats("tx", "server"), ["server"])
+        self.assertEqual(resolve_whats("tx", "ser"), ["server"])
+        self.assertEqual(resolve_whats("tx", "s"), ["server"])
+        self.assertEqual(resolve_whats("tx", "ыукмук"), ["server"])
+        self.assertEqual(resolve_whats("tx", "ыук"), ["server"])
+        self.assertEqual(resolve_whats("tx", "ы"), ["server"])
+
+        self.assertEqual(resolve_whats("tx", "designer+server"), ["designer", "server"])
+        self.assertEqual(resolve_whats("tx", "вуышптук+server"), ["designer", "server"])
+        self.assertEqual(resolve_whats("tx", "вуышптук+ыукмук"), ["designer", "server"])
+        self.assertEqual(resolve_whats("tx", "d+s"), ["designer", "server"])
+        self.assertEqual(resolve_whats("tx", "в+ы"), ["designer", "server"])
+
+        self.assertEqual(resolve_whats("manager", "up"), ["up"])
+        self.assertEqual(resolve_whats("m", "up"), ["up"])
+        self.assertEqual(resolve_whats("ь", "up"), ["up"])
+        self.assertEqual(resolve_whats("ь", "гз"), ["up"])
+
+        self.assertRaises(UnknownWhatException, resolve_whats, "tx", "BFG")
+
+    def test_resolve_version(self):
+        self.assertEqual(resolve_version("tx", "trunk"), "trunk")
+        self.assertEqual(resolve_version("tx", "tr"), "trunk")
+        self.assertEqual(resolve_version("еч", "trunk"), "trunk")
+        self.assertEqual(resolve_version("optt", "trunk"), "trunk")
+        self.assertEqual(resolve_version("щзе", "trunk"), "trunk")
+        self.assertEqual(resolve_version("tx", "екгтл"), "trunk")
+        self.assertEqual(resolve_version("tx", "ек"), "trunk")
+        self.assertEqual(resolve_version("tx", "3.2.3"), "3.2.3")
+        self.assertEqual(resolve_version("tx", "3"), "3.2.3")
+
+    def test_get_similar_version_path(self):
+        versions: dict = settings.get_project("tx")["versions"]
+        path_tx_trunk: str = versions["trunk"]
+        path_tx_3_2_3: str = versions["3.2.3"]
+
+        self.assertEqual(get_similar_version_path("tx", "trunk"), path_tx_trunk)
+        self.assertEqual(get_similar_version_path("tx", "t"), path_tx_trunk)
+        self.assertEqual(get_similar_version_path("tx", "tru"), path_tx_trunk)
+        self.assertEqual(get_similar_version_path("tx", "екгтл"), path_tx_trunk)
+        self.assertEqual(get_similar_version_path("tx", "екг"), path_tx_trunk)
+        self.assertEqual(get_similar_version_path("tx", "е"), path_tx_trunk)
+        self.assertEqual(get_similar_version_path("еч", "trunk"), path_tx_trunk)
+        self.assertEqual(get_similar_version_path("еч", "екгтл"), path_tx_trunk)
+        self.assertEqual(get_similar_version_path("tx", "3.2.3"), path_tx_3_2_3)
+        self.assertEqual(get_similar_version_path("tx", "3"), path_tx_3_2_3)
+
+    def test_get_file_by_what(self):
+        self.assertEqual(
+            get_file_by_what("tx", "designer"),
+            get_file_by_what("tx", "d"),
+        )
+        self.assertEqual(
+            get_file_by_what("tx", "s"),
+            get_file_by_what("tx", "ы"),
+        )
+
+        value_designer: str = get_file_by_what("tx", "designer")
+        self.assertTrue(isinstance(value_designer, str))
+        self.assertTrue(value_designer.endswith("!!designer.cmd"))
+
+        value_server: dict = get_file_by_what("tx", "server")
+        self.assertTrue(
+            isinstance(value_server, dict),
+        )
+        self.assertEqual(
+            value_server,
+            {
+                "__default__": "ora",
+                "ora": "!!server.cmd",
+                "pg": "!!server-postgres.cmd",
+            },
+        )
+
+        value_update: list = get_file_by_what("tx", "update")
+        self.assertTrue(
+            isinstance(value_update, list),
+        )
+        self.assertEqual(value_update, ["svn update", commands.svn_update])
+
+
+class TestGo(TestCase):
+    def test_parse_cmd_args(self):
+        self.assertEqual(
+            go.parse_cmd_args("tx s".split()),
+            [go.Command(name="tx", version=None, what="server", args=[])],
+        )
+
+        self.assertEqual(
+            go.parse_cmd_args("tx s pg".split()),
+            [go.Command(name="tx", version=None, what="server", args=["pg"])],
+        )
+
+        self.assertEqual(
+            go.parse_cmd_args("еч ы зп".split()),
+            [go.Command(name="tx", version=None, what="server", args=["зп"])],
+        )
+
+        self.assertEqual(
+            go.parse_cmd_args("tx 3 s".split()),
+            [go.Command(name="tx", version="3.2.3", what="server", args=[])],
+        )
+        self.assertEqual(
+            go.parse_cmd_args("tx 2-tr s".split()),
+            [
+                go.Command(name="tx", version="3.2.2", what="server", args=[]),
+                go.Command(name="tx", version="3.2.3", what="server", args=[]),
+                go.Command(name="tx", version="trunk", what="server", args=[]),
+            ],
+        )
+        self.assertEqual(
+            go.parse_cmd_args("tx 2,tr s".split()),
+            [
+                go.Command(name="tx", version="3.2.2", what="server", args=[]),
+                go.Command(name="tx", version="trunk", what="server", args=[]),
+            ],
+        )
+
+        self.assertEqual(
+            go.parse_cmd_args("tx 3-tr d+s abc 123".split()),
+            [
+                go.Command(
+                    name="tx", version="3.2.3", what="designer", args=["abc", "123"]
+                ),
+                go.Command(
+                    name="tx", version="3.2.3", what="server", args=["abc", "123"]
+                ),
+                go.Command(
+                    name="tx", version="trunk", what="designer", args=["abc", "123"]
+                ),
+                go.Command(
+                    name="tx", version="trunk", what="server", args=["abc", "123"]
+                ),
+            ],
+        )
