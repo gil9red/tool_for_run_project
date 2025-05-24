@@ -131,6 +131,10 @@ import settings
 SETTINGS = go.SETTINGS
 
 
+# NOTE: Для отладки
+# print(json.dumps(SETTINGS, indent=4, default=repr))
+
+
 class TestCommon(TestCase):
     def test_override_base(self):
         self.assertEqual(
