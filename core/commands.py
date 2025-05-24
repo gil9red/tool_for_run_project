@@ -474,14 +474,11 @@ def resolve_whats(name: str, alias: str | None) -> list[str]:
     return items
 
 
-def resolve_version(name: str, alias: str, versions: list[str] | None = None) -> str:
-    settings = get_project(name)
+def resolve_version(name: str, alias: str) -> str:
+    settings: dict = get_project(name)
 
-    supported = versions
-    if not supported:
-        supported = settings["versions"]
-
-    shadow_supported = {from_ghbdtn(x): x for x in supported}
+    supported: dict = settings["versions"]
+    shadow_supported: dict = {from_ghbdtn(x): x for x in supported}
 
     # Если короткая версия, нужно ее расширить, добавив основание версии
     if is_like_a_short_version(alias):
@@ -497,7 +494,7 @@ def resolve_version(name: str, alias: str, versions: list[str] | None = None) ->
         alias = base_version + alias
 
     # Поиск среди списка
-    version = get_similar_value(alias, supported)
+    version: str | None = get_similar_value(alias, supported)
     if not version:
         # Попробуем найти среди транслитерованных
         version = get_similar_value(alias, shadow_supported)
@@ -520,5 +517,5 @@ def get_file_by_what(name: str, alias: str | None) -> WhatValue:
 
 def get_similar_version_path(name: str, version: str) -> str:
     supported = get_project(name)["versions"]
-    version = resolve_version(name, version, supported)
+    version = resolve_version(name, version)
     return supported[version]
