@@ -145,7 +145,10 @@ class Command:
             if not arg:
                 arg = value["__default__"]
 
-            value = value[arg]
+            try:
+                value = value[arg]
+            except KeyError:
+                value = value[from_ghbdtn(arg)]
 
         if isinstance(value, str):
             file_name = dir_file_name + "/" + value
