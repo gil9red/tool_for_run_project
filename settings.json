@@ -52,19 +52,19 @@
     "radix": {
         "base": "__radix_base",
         "path": "C:/DEV__RADIX",
-        "base_version": "2.1."
+        "base_version": "2.1.{number}"
     },
     "tx": {
         "base": "__radix_base",
         "path": "C:/DEV__TX",
-        "base_version": "3.2.",
+        "base_version": "3.2.{number}",
         "jenkins_url": "${self['tx']['vars']['URL_JENKINS'] + '/job/assemble_tx/branch={version},label=lightweight/lastBuild/api/json?tree=result,timestamp,url'}",
         "svn_dev_url": "svn+cplus://svn2.compassplus.ru/twrbs/trunk/dev"
     },
     "optt": {
         "base": "__radix_base",
         "path": "C:/DEV__OPTT",
-        "base_version": "2.1.",
+        "base_version": "2.1.{number}",
         "jenkins_url": "${self['optt']['vars']['URL_JENKINS'] + '/job/OPTT_{version}_build/lastBuild/api/json?tree=result,timestamp,url'}",
         "svn_dev_url": "svn+cplus://svn2.compassplus.ru/twrbs/csm/optt/dev"
     },

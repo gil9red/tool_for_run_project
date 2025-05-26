@@ -48,16 +48,23 @@ SETTINGS_TEMPLATE_JSON: str = r"""
     "tx": {
         "base": "__radix_base",
         "path": "C:/DEV__TX",
-        "base_version": "3.2.",
+        "base_version": "3.2.{number}",
         "jenkins_url": "${self['tx']['vars']['URL_JENKINS'] + '/job/assemble_tx/branch={version},label=lightweight/lastBuild/api/json?tree=result,timestamp,url'}",
         "svn_dev_url": "svn://127.0.0.1/tx/dev/trunk"
     },
     "optt": {
         "base": "__radix_base",
         "path": "C:/DEV__OPTT",
-        "base_version": "2.1.",
+        "base_version": "2.1.{number}",
         "jenkins_url": "${self['optt']['vars']['URL_JENKINS'] + '/job/OPTT_{version}_build/lastBuild/api/json?tree=result,timestamp,url'}",
         "svn_dev_url": "svn://127.0.0.1/optt/dev/trunk"
+    },
+    "abc": {
+        "base": "__radix_base",
+        "path": "C:/DEV__ABC",
+        "base_version": "4.1.{number}.10-dev",
+        "jenkins_url": "${self['abc']['vars']['URL_JENKINS'] + '/job/ABC_{version}_build/lastBuild/api/json?tree=result,timestamp,url'}",
+        "svn_dev_url": "svn://127.0.0.1/abc/dev/trunk"
     },
     "__simple_base": {
         "options": {
@@ -93,12 +100,14 @@ SETTINGS_TEMPLATE_JSON = SETTINGS_TEMPLATE_JSON.replace(
 )
 
 SETTINGS_TEMPLATE = json.loads(SETTINGS_TEMPLATE_JSON)
-for name in ["tx", "optt"]:
+for name in ["tx", "optt", "abc"]:
     project = SETTINGS_TEMPLATE[name]["path"]
     default_version = SETTINGS_TEMPLATE["__radix_base"]["options"]["default_version"]
     base_version = SETTINGS_TEMPLATE[name]["base_version"]
 
-    for version in [default_version] + [f"{base_version}{i}" for i in range(1, 4)]:
+    for version in [default_version] + [
+        base_version.format(number=i) for i in range(1, 4)
+    ]:
         for file_name in ["!!designer.cmd", "!!server.cmd", "!!server-postgres.cmd"]:
             d = DIR_ENV / project / version
             d.mkdir(parents=True, exist_ok=True)
@@ -322,6 +331,10 @@ class TestGo(TestCase):
         self.assertEqual(
             go.parse_cmd_args("tx s".split()),
             [go.Command(name="tx", version=None, what="server", args=[])],
+        )
+        self.assertEqual(
+            go.parse_cmd_args("abc 3 s".split()),
+            [go.Command(name="abc", version="4.1.3.10-dev", what="server", args=[])],
         )
 
         self.assertEqual(

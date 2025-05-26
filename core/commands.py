@@ -494,7 +494,7 @@ def resolve_version(name: str, alias: str) -> str:
             raise GoException(text)
 
         # Составление полной версии
-        alias = base_version + alias
+        alias = base_version.format(number=alias)
 
     # Поиск среди списка
     version: str | None = get_similar_value(alias, supported)
