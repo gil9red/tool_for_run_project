@@ -307,9 +307,7 @@ class TestCommands(TestCase):
         self.assertTrue(value_designer.endswith("!!designer.cmd"))
 
         value_server: dict = get_file_by_what("tx", "server")
-        self.assertTrue(
-            isinstance(value_server, dict),
-        )
+        self.assertTrue(isinstance(value_server, dict))
         self.assertEqual(
             value_server,
             {
@@ -320,9 +318,7 @@ class TestCommands(TestCase):
         )
 
         value_update: list = get_file_by_what("tx", "update")
-        self.assertTrue(
-            isinstance(value_update, list),
-        )
+        self.assertTrue(isinstance(value_update, list))
         self.assertEqual(value_update, ["svn update", commands.svn_update])
 
 
