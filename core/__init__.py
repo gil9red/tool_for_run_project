@@ -96,7 +96,7 @@ def is_like_a_short_version(value: str) -> bool:
 
 def is_like_a_version(value: str) -> bool:
     trunk = "trunk"
-    trunk_invert = from_ghbdtn(trunk)  # from_ghbdtn('trunk') = 'екгтл'
+    trunk_invert = from_ghbdtn(trunk)  # "trunk" -> "екгтл"
     return (
         trunk in value  # Для файлов
         or bool(get_similar_value(value, [trunk, trunk_invert]))
