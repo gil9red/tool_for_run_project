@@ -22,9 +22,9 @@ from third_party.from_ghbdtn import from_ghbdtn
 
 
 if path_settings_value := os.getenv("PATH_SETTINGS"):
-    PATH_SETTINGS = Path(path_settings_value).resolve()
+    PATH_SETTINGS: Path = Path(path_settings_value).resolve()
 else:
-    PATH_SETTINGS = Path(__file__).parent.resolve() / "settings.json"
+    PATH_SETTINGS: Path = Path(__file__).parent.resolve() / "settings.json"
 
 __SETTINGS = json.loads(PATH_SETTINGS.read_text(encoding="utf-8"))
 
