@@ -131,10 +131,14 @@ def settings_preprocess(settings: dict[str, dict]) -> dict[str, dict]:
                 for path in path_value:
                     path_dir = Path(path)
                     if not path_dir.exists():
-                        raise GoException(f"Путь в настройках {name!r} не существует: {path!r}")
+                        raise GoException(
+                            f"Путь в настройках {name!r} не существует: {path!r}"
+                        )
 
                     if not path_dir.is_dir():
-                        raise GoException(f"Путь в настройках {name!r} не является папкой: {path!r}")
+                        raise GoException(
+                            f"Путь в настройках {name!r} не является папкой: {path!r}"
+                        )
 
                     for version, version_path in get_versions_by_path(path).items():
                         other_version_path: str | None = version_by_path.get(version)

@@ -99,9 +99,7 @@ class Command:
         options: dict = settings["options"]
 
         if options["version"] == AvailabilityEnum.OPTIONAL and not self.version:
-            self.version = resolve_version(
-                self.name, options["default_version"]
-            )
+            self.version = resolve_version(self.name, options["default_version"])
 
         settings_params = ["version", "what", "args"]
         for param in settings_params:
@@ -115,7 +113,9 @@ class Command:
                 path: str = path_value
             else:
                 if not path_value:
-                    raise GoException(f"Пустое значение 'path' в настройках {self.name!r}")
+                    raise GoException(
+                        f"Пустое значение 'path' в настройках {self.name!r}"
+                    )
 
                 path: str = path_value[0]
 
