@@ -26,7 +26,7 @@ if path_settings_value := os.getenv("PATH_SETTINGS"):
 else:
     PATH_SETTINGS: Path = Path(__file__).parent.resolve() / "settings.json"
 
-__SETTINGS = json.loads(PATH_SETTINGS.read_text(encoding="utf-8"))
+__SETTINGS: dict[str, Any] = json.loads(PATH_SETTINGS.read_text(encoding="utf-8"))
 
 
 # SOURCE: https://stackoverflow.com/a/20666342/5909792
