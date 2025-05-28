@@ -14,6 +14,7 @@ from typing import Any, Callable
 
 from core import (
     AvailabilityEnum,
+    GoException,
     is_like_a_version,
     get_similar_value,
     UnknownNameException,
@@ -120,8 +121,32 @@ def settings_preprocess(settings: dict[str, dict]) -> dict[str, dict]:
             "path" in new_settings[name]
             and new_settings[name]["options"]["version"] != AvailabilityEnum.PROHIBITED
         ):
-            path = new_settings[name]["path"]
-            new_settings[name]["versions"] = get_versions_by_path(path)
+            path_value: str | list[str] = new_settings[name]["path"]
+
+            version_by_path: dict[str, str] = dict()
+
+            if isinstance(path_value, str):
+                version_by_path = get_versions_by_path(path_value)
+            else:
+                for path in path_value:
+                    path_dir = Path(path)
+                    if not path_dir.exists():
+                        raise GoException(f"Путь в настройках {name!r} не существует: {path!r}")
+
+                    if not path_dir.is_dir():
+                        raise GoException(f"Путь в настройках {name!r} не является папкой: {path!r}")
+
+                    for version, version_path in get_versions_by_path(path).items():
+                        other_version_path: str | None = version_by_path.get(version)
+                        if other_version_path:
+                            raise GoException(
+                                f"Обнаружен дубликат версии в настройках {name!r} для версии {version!r}, пути:"
+                                f" {version_path!r} и {other_version_path!r}"
+                            )
+
+                        version_by_path[version] = version_path
+
+            new_settings[name]["versions"] = version_by_path
 
     # Removing private names
     private_names = [name for name in new_settings if name.startswith("__")]
@@ -164,6 +189,6 @@ def resolve_name(alias: str) -> str:
     return name
 
 
-def get_path_by_name(name: str) -> str:
+def get_path_by_name(name: str) -> str | list[str]:
     settings = get_project(name)
     return settings["path"]

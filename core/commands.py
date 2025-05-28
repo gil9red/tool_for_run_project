@@ -107,9 +107,17 @@ class Command:
         for param in settings_params:
             self._check_parameter(param)
 
-        # Если по <name> указывается файл, то сразу его и запускаем
-        path: str = get_path_by_name(self.name)
-        value: WhatValue = get_file_by_what(self.name, self.what)
+        if self.version:
+            path: str = get_similar_version_path(self.name, self.version)
+        else:
+            path_value: str | list[str] = get_path_by_name(self.name)
+            if isinstance(path_value, str):
+                path: str = path_value
+            else:
+                if not path_value:
+                    raise GoException(f"Пустое значение 'path' в настройках {self.name!r}")
+
+                path: str = path_value[0]
 
         # Если по <name> указывается файл, то сразу его и запускаем
         if (
@@ -122,8 +130,7 @@ class Command:
             run_file(path)
             return
 
-        if self.version:
-            path = get_similar_version_path(self.name, self.version)
+        value: WhatValue = get_file_by_what(self.name, self.what)
 
         # Если в <whats> функция, вызываем её
         if callable(value):

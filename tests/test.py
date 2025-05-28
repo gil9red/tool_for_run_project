@@ -61,7 +61,11 @@ SETTINGS_TEMPLATE_JSON: str = r"""
     },
     "abc": {
         "base": "__radix_base",
-        "path": "C:/DEV__ABC",
+        "path": [
+            "C:/DEV__ABC",
+            "C:/local/remote/foo/bar",
+            "C:/local/remote/foo/abc"
+        ],
         "base_version": "4.1.{number}.10-dev",
         "jenkins_url": "${self['abc']['vars']['URL_JENKINS'] + '/job/ABC_{version}_build/lastBuild/api/json?tree=result,timestamp,url'}",
         "svn_dev_url": "svn://127.0.0.1/abc/dev/trunk"
@@ -101,17 +105,28 @@ SETTINGS_TEMPLATE_JSON = SETTINGS_TEMPLATE_JSON.replace(
 
 SETTINGS_TEMPLATE = json.loads(SETTINGS_TEMPLATE_JSON)
 for name in ["tx", "optt", "abc"]:
-    project = SETTINGS_TEMPLATE[name]["path"]
+    path_value: str | list[str] = SETTINGS_TEMPLATE[name]["path"]
     default_version = SETTINGS_TEMPLATE["__radix_base"]["options"]["default_version"]
     base_version = SETTINGS_TEMPLATE[name]["base_version"]
 
-    for version in [default_version] + [
-        base_version.format(number=i) for i in range(1, 4)
-    ]:
+    def _create_files(path: str, version: str):
         for file_name in ["!!designer.cmd", "!!server.cmd", "!!server-postgres.cmd"]:
-            d = DIR_ENV / project / version
+            d = DIR_ENV / path / version
             d.mkdir(parents=True, exist_ok=True)
             (d / file_name).touch(exist_ok=True)
+
+    if isinstance(path_value, str):
+        path: str = path_value
+        for version_name in [default_version] + [
+            base_version.format(number=i) for i in [1, 2, 3]
+        ]:
+            _create_files(path, version_name)
+    else:
+        version = 1
+        for path in path_value:
+            for i in range(3):
+                _create_files(path, base_version.format(number=version))
+                version += 1
 
 PATH_TEST_SETTINGS: Path = DIR_ENV / "test-settings.json"
 PATH_TEST_SETTINGS.write_text(SETTINGS_TEMPLATE_JSON, encoding="utf-8")
@@ -142,6 +157,7 @@ SETTINGS = go.SETTINGS
 
 # NOTE: Для отладки
 # print(json.dumps(SETTINGS, indent=4, default=repr))
+# quit()
 
 
 class TestCommon(TestCase):
@@ -189,16 +205,41 @@ class TestCommon(TestCase):
 
 class TestSettings(TestCase):
     def test_get_versions_by_path(self):
-        path = settings.get_path_by_name("tx")
+        path_value: str | list[str] = settings.get_path_by_name("tx")
+        self.assertTrue(isinstance(path_value, str))
         self.assertEqual(
-            sorted(settings.get_versions_by_path(path).keys()),
+            sorted(settings.get_versions_by_path(path_value).keys()),
             sorted(["3.2.1", "3.2.2", "3.2.3", "trunk"]),
         )
 
-        path = settings.get_path_by_name("optt")
+        path_value: str | list[str] = settings.get_path_by_name("optt")
+        self.assertTrue(isinstance(path_value, str))
         self.assertEqual(
-            sorted(settings.get_versions_by_path(path).keys()),
+            sorted(settings.get_versions_by_path(path_value).keys()),
             sorted(["2.1.1", "2.1.2", "2.1.3", "trunk"]),
+        )
+
+        path_value: str | list[str] = settings.get_path_by_name("abc")
+        self.assertTrue(isinstance(path_value, list))
+
+        version_by_path: dict[str, str] = dict()
+        for path in path_value:
+            version_by_path.update(settings.get_versions_by_path(path))
+        self.assertEqual(
+            sorted(version_by_path.keys()),
+            sorted(
+                [
+                    "4.1.1.10-dev",
+                    "4.1.2.10-dev",
+                    "4.1.3.10-dev",
+                    "4.1.4.10-dev",
+                    "4.1.5.10-dev",
+                    "4.1.6.10-dev",
+                    "4.1.7.10-dev",
+                    "4.1.8.10-dev",
+                    "4.1.9.10-dev",
+                ]
+            ),
         )
 
     def test_get_project(self):
@@ -234,6 +275,10 @@ class TestSettings(TestCase):
         self.assertIsNotNone(settings.get_path_by_name("щзее"))
         self.assertIsNotNone(settings.get_path_by_name("щ"))
         self.assertIsNotNone(settings.get_path_by_name("щз"))
+
+        self.assertIsNotNone(settings.get_path_by_name("abc"))
+        self.assertIsNotNone(settings.get_path_by_name("a"))
+        self.assertIsNotNone(settings.get_path_by_name("фис"))
 
 
 class TestCommands(TestCase):
@@ -291,6 +336,11 @@ class TestCommands(TestCase):
         self.assertEqual(get_similar_version_path("еч", "екгтл"), path_tx_trunk)
         self.assertEqual(get_similar_version_path("tx", "3.2.3"), path_tx_3_2_3)
         self.assertEqual(get_similar_version_path("tx", "3"), path_tx_3_2_3)
+
+        # Версии в разных папках
+        self.assertIn("DEV__ABC", get_similar_version_path("abc", "1"))
+        self.assertIn(r"local\remote\foo\bar", get_similar_version_path("abc", "4"))
+        self.assertIn(r"local\remote\foo\abc", get_similar_version_path("abc", "7"))
 
     def test_get_file_by_what(self):
         self.assertEqual(
