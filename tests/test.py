@@ -433,5 +433,9 @@ class TestGo(TestCase):
 
         self.assertEqual(
             go.parse_cmd_args("t д release version".split()),
-            [go.Command(name="tx", version=None, what="log", args=['release', 'version'])],
+            [
+                go.Command(
+                    name="tx", version=None, what="log", args=["release", "version"]
+                )
+            ],
         )
