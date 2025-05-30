@@ -169,8 +169,8 @@ class Command:
             command(path, self.args, RunContext(self, description))
             return
 
-        find_string = self.args[0] if self.args else ""
-        command = command.format(path=dir_file_name, find_string=find_string)
+        find_string: str = " ".join(self.args) if self.args else ""
+        command: str = command.format(path=dir_file_name, find_string=find_string)
 
         print(f"Запуск: {description} в {dir_file_name}")
         os.system(command)
