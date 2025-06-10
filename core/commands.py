@@ -46,28 +46,21 @@ WhatValue = str | list[str, str | Callable] | dict | Callable | None
 
 
 def run_file(file_name: str):
-    dir_file_name = os.path.dirname(file_name)
-    file_name = os.path.normpath(file_name)
+    path_file: Path = Path(file_name).resolve()
+    print(f"Запуск: {str(path_file)!r}")
 
-    print(f"Запуск: {file_name!r}")
-
-    # Move to active dir
-    os.chdir(dir_file_name)
-
-    # Run
-    os.startfile(file_name)
+    os.startfile(path_file, cwd=path_file.parent)
 
 
 def open_dir(path: str):
-    if os.path.isfile(path):
-        dir_file_name = os.path.dirname(path)
-    else:
-        dir_file_name = path
+    path_dir: Path = Path(path).resolve()
+    if path_dir.is_file():
+        path_dir = path_dir.parent
 
-    print(f"Открытие: {dir_file_name!r}")
+    print(f"Открытие: {str(path_dir)!r}")
 
     # Open
-    os.startfile(dir_file_name)
+    os.startfile(path_dir)
 
 
 @dataclass
@@ -120,12 +113,8 @@ class Command:
                 path: str = path_value[0]
 
         # Если по <name> указывается файл, то сразу его и запускаем
-        if (
-            (os.path.isfile(path) and not self.what and not self.args)
-            or all(
-                options[param] == AvailabilityEnum.PROHIBITED
-                for param in settings_params
-            )
+        if (Path(path).is_file() and not self.what and not self.args) or all(
+            options[param] == AvailabilityEnum.PROHIBITED for param in settings_params
         ):
             run_file(path)
             return
@@ -210,8 +199,8 @@ def open_path(path: str, args: list[str] | None = None, context: RunContext = No
     if not context:
         raise GoException("Что-то пошло не так при вызове 'open' - context is None")
 
-    command = context.command
-    path = get_similar_version_path(command.name, command.version)
+    command: Command = context.command
+    path: str = get_similar_version_path(command.name, command.version)
     open_dir(path)
 
 
