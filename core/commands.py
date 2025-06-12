@@ -52,17 +52,6 @@ def run_file(file_name: str):
     os.startfile(path_file, cwd=path_file.parent)
 
 
-def open_dir(path: str):
-    path_dir: Path = Path(path).resolve()
-    if path_dir.is_file():
-        path_dir = path_dir.parent
-
-    print(f"Открытие: {str(path_dir)!r}")
-
-    # Open
-    os.startfile(path_dir)
-
-
 @dataclass
 class Command:
     name: str
@@ -123,7 +112,7 @@ class Command:
                 f"Запуск: {self.name} вызов {self.what!r}"
                 + (f" ({', '.join(self.args)})" if self.args else "")
             )
-            value(path, self.args, RunContext(self))
+            value(RunContext(self, path=path))
             return
 
         dir_file_name: str = get_similar_version_path(self.name, self.version)
@@ -151,7 +140,7 @@ class Command:
 
         # Если функция - вызываем
         if callable(command):
-            command(path, self.args, RunContext(self, description))
+            command(RunContext(self, path=path, description=description))
             return
 
         find_string: str = " ".join(self.args) if self.args else ""
@@ -164,10 +153,14 @@ class Command:
 @dataclass
 class RunContext:
     command: Command
+    path: str
     description: str = ""
 
 
-def run_path(path: str, args: list[str], context: RunContext):
+def run_path(context: RunContext):
+    path: str = context.path
+    args: list[str] = context.command.args
+
     if not args:
         print("Нужно задать маску файла")
         return
@@ -191,16 +184,21 @@ def run_path(path: str, args: list[str], context: RunContext):
     run_file(file_name)
 
 
-def open_path(path: str, args: list[str], context: RunContext):
-    if not context:
-        raise GoException("Что-то пошло не так при вызове 'open' - context is None")
+def open_path(context: RunContext):
+    path_dir: Path = Path(context.path).resolve()
+    if path_dir.is_file():
+        path_dir = path_dir.parent
 
-    command: Command = context.command
-    path: str = get_similar_version_path(command.name, command.version)
-    open_dir(path)
+    print(f"Открытие: {str(path_dir)!r}")
+
+    # Open
+    os.startfile(path_dir)
 
 
-def kill(path: str, args: list[str], context: RunContext):
+def kill(context: RunContext):
+    path: str = context.path
+    args: list[str] = context.command.args
+
     pids: list[int] = []
 
     # Если аргументы не заданы, то убиваем все процессы
@@ -235,7 +233,10 @@ def kill(path: str, args: list[str], context: RunContext):
         print("Не удалось найти процессы!")
 
 
-def processes(path: str, args: list[str], context: RunContext):
+def processes(context: RunContext):
+    path: str = context.path
+    args: list[str] = context.command.args
+
     class ProcessEnum(enum.Enum):
         Server = enum.auto()
         Explorer = enum.auto()
@@ -249,7 +250,7 @@ def processes(path: str, args: list[str], context: RunContext):
 
     # all - показываем все процессы
     if args and args[0].lower().startswith("a"):
-        path = None
+        path: str | None = None
 
     for p in get_processes(path):
         try:
@@ -275,9 +276,10 @@ def processes(path: str, args: list[str], context: RunContext):
         print("Не удалось найти процессы!")
 
 
-def get_last_release_version(path: str, args: list[str], context: RunContext):
+def get_last_release_version(context: RunContext):
     command = context.command
-    version = command.version
+    args: list[str] = command.args
+    version: str | None = command.version
 
     # Значение в днях передается в аргументах
     last_days = 30
@@ -298,10 +300,11 @@ def get_last_release_version(path: str, args: list[str], context: RunContext):
     print(f"Последняя версия релиза для {version}: {result}\n")
 
 
-def find_release_versions(path: str, args: list[str], context: RunContext):
+def find_release_versions(context: RunContext):
     if context.command.version == "trunk":
         raise GoException("Команду нужно вызывать в релизных версиях!")
 
+    args: list[str] = context.command.args
     if not args:
         raise GoException("Текст для поиска не указан!")
 
@@ -331,9 +334,10 @@ def find_release_versions(path: str, args: list[str], context: RunContext):
     print(f"Коммит с {text!r} в {version} попал в версию: {result}\n")
 
 
-def find_versions(path: str, args: list[str], context: RunContext):
+def find_versions(context: RunContext):
     command = context.command
 
+    args: list[str] = command.args
     if not args:
         raise GoException("Текст для поиска не указан!")
 
@@ -360,8 +364,8 @@ def find_versions(path: str, args: list[str], context: RunContext):
     print(f"Строка {text!r} встречается в версиях: {result}")
 
 
-def manager_up(path: str, args: list[str], context: RunContext):
-    path = Path(path)
+def manager_up(context: RunContext):
+    path = Path(context.path)
 
     # NOTE: "C:\DEV__RADIX\manager\manager\bin\manager.cmd" -> "C:\DEV__RADIX\manager"
     root_dir = path.parent.parent.parent
@@ -386,8 +390,8 @@ def manager_up(path: str, args: list[str], context: RunContext):
         shutil.move(file, new_file)
 
 
-def manager_clean(path: str, args: list[str], context: RunContext):
-    path = Path(path)
+def manager_clean(context: RunContext):
+    path = Path(context.path)
 
     # NOTE: "C:\DEV__RADIX\manager\manager\bin\manager.cmd" -> "C:\DEV__RADIX\manager"
     root_dir = path.parent.parent.parent
@@ -403,7 +407,10 @@ def manager_clean(path: str, args: list[str], context: RunContext):
         file.unlink()
 
 
-def svn_update(path: str, args: list[str], context: RunContext):
+def svn_update(context: RunContext):
+    path: str = context.path
+    args: list[str] = context.command.args
+
     force = False
 
     # force - обновляемся, даже если сборка сломана
