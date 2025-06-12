@@ -130,7 +130,7 @@ class Command:
             value(path, self.args, RunContext(self))
             return
 
-        dir_file_name = get_similar_version_path(self.name, self.version)
+        dir_file_name: str = get_similar_version_path(self.name, self.version)
 
         # Move to active dir
         os.chdir(dir_file_name)
@@ -171,7 +171,7 @@ class RunContext:
     description: str = ""
 
 
-def run_path(path: str, args: list[str] | None = None, context: RunContext = None):
+def run_path(path: str, args: list[str], context: RunContext):
     if not args:
         print("Нужно задать маску файла")
         return
@@ -195,7 +195,7 @@ def run_path(path: str, args: list[str] | None = None, context: RunContext = Non
     run_file(file_name)
 
 
-def open_path(path: str, args: list[str] | None = None, context: RunContext = None):
+def open_path(path: str, args: list[str], context: RunContext):
     if not context:
         raise GoException("Что-то пошло не так при вызове 'open' - context is None")
 
@@ -204,8 +204,8 @@ def open_path(path: str, args: list[str] | None = None, context: RunContext = No
     open_dir(path)
 
 
-def kill(path: str, args: list[str] | None = None, context: RunContext = None):
-    pids = []
+def kill(path: str, args: list[str], context: RunContext):
+    pids: list[int] = []
 
     # Если аргументы не заданы, то убиваем все процессы
     if not args:
@@ -239,7 +239,7 @@ def kill(path: str, args: list[str] | None = None, context: RunContext = None):
         print("Не удалось найти процессы!")
 
 
-def processes(path: str, args: list[str] | None = None, context: RunContext = None):
+def processes(path: str, args: list[str], context: RunContext):
     class ProcessEnum(enum.Enum):
         Server = enum.auto()
         Explorer = enum.auto()
@@ -279,11 +279,7 @@ def processes(path: str, args: list[str] | None = None, context: RunContext = No
         print("Не удалось найти процессы!")
 
 
-def get_last_release_version(
-    path: str,
-    args: list[str] | None = None,
-    context: RunContext = None,
-):
+def get_last_release_version(path: str, args: list[str], context: RunContext):
     command = context.command
     version = command.version
 
@@ -306,11 +302,7 @@ def get_last_release_version(
     print(f"Последняя версия релиза для {version}: {result}\n")
 
 
-def find_release_versions(
-    path: str,
-    args: list[str] | None = None,
-    context: RunContext = None,
-):
+def find_release_versions(path: str, args: list[str], context: RunContext):
     if context.command.version == "trunk":
         raise GoException("Команду нужно вызывать в релизных версиях!")
 
@@ -343,11 +335,7 @@ def find_release_versions(
     print(f"Коммит с {text!r} в {version} попал в версию: {result}\n")
 
 
-def find_versions(
-    path: str,
-    args: list[str] | None = None,
-    context: RunContext = None,
-):
+def find_versions(path: str, args: list[str], context: RunContext):
     command = context.command
 
     if not args:
@@ -376,7 +364,7 @@ def find_versions(
     print(f"Строка {text!r} встречается в версиях: {result}")
 
 
-def manager_up(path: str, _: list[str] | None = None, context: RunContext = None):
+def manager_up(path: str, args: list[str], context: RunContext):
     path = Path(path)
 
     # NOTE: "C:\DEV__RADIX\manager\manager\bin\manager.cmd" -> "C:\DEV__RADIX\manager"
@@ -402,7 +390,7 @@ def manager_up(path: str, _: list[str] | None = None, context: RunContext = None
         shutil.move(file, new_file)
 
 
-def manager_clean(path: str, _: list[str] | None = None, context: RunContext = None):
+def manager_clean(path: str, args: list[str], context: RunContext):
     path = Path(path)
 
     # NOTE: "C:\DEV__RADIX\manager\manager\bin\manager.cmd" -> "C:\DEV__RADIX\manager"
@@ -419,7 +407,7 @@ def manager_clean(path: str, _: list[str] | None = None, context: RunContext = N
         file.unlink()
 
 
-def svn_update(path: str, args: list[str] | None = None, context: RunContext = None):
+def svn_update(path: str, args: list[str], context: RunContext):
     force = False
 
     # force - обновляемся, даже если сборка сломана
