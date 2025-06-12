@@ -7,7 +7,7 @@ __author__ = "ipetrash"
 import enum
 import os
 import shutil
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import Callable
@@ -68,11 +68,7 @@ class Command:
     name: str
     version: str | None = None
     what: str | None = None
-    args: list[str] | None = None
-
-    def __post_init__(self):
-        if self.args is None:
-            self.args = []
+    args: list[str] = field(default_factory=list)
 
     def _check_parameter(self, param: str):
         settings = get_project(self.name)
