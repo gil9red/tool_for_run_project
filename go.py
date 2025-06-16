@@ -193,19 +193,22 @@ def run(args: list[str]):
         settings: dict = get_project(name)
         options: dict = settings["options"]
 
+        is_answered: bool = False
+
         # Если для сущности параметр версии возможен
         if options["version"] != AvailabilityEnum.PROHIBITED:
             supported_versions = ", ".join(sorted(settings["versions"]))
             print(f"Поддерживаемые версии: {supported_versions}")
-            return
+            is_answered = True
 
         # Если для сущности параметр what возможен
         if options["what"] != AvailabilityEnum.PROHIBITED:
             supported_whats = ", ".join(sorted(settings["whats"]))
             print(f"Поддерживаемые <what>: {supported_whats}")
-            return
+            is_answered = True
 
-        print(e)
+        if not is_answered:
+            print(e)
 
     except GoException as e:
         # Если передан флаг отладки
