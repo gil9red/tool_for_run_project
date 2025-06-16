@@ -22,7 +22,7 @@ SETTINGS = settings.SETTINGS
 
 from core.commands import (
     Command,
-    resolve_whats,
+    resolve_actions,
     resolve_version,
 )
 from settings import get_project, resolve_name
@@ -30,12 +30,12 @@ from settings import get_project, resolve_name
 
 ABOUT_TEXT = r"""
 RUN:
-  go <name> <version> <what> - Run tool
-  go <name> <what>           - Run tool (trunk version)
-  go <name> open <version>   - Open dir version
-  go <name> open             - Open dir
-  go <name>                  - Print versions
-  go -d                      - Print settings
+  go <name> <version> <action> - Run tool
+  go <name> <action>           - Run tool (trunk version)
+  go <name> open <version>     - Open dir version
+  go <name> open               - Open dir
+  go <name>                    - Print versions
+  go -d                        - Print settings
 
 SUPPORTED NAMES:
   {}
@@ -92,7 +92,7 @@ EXAMPLES:
 
   > go optt
     Supported versions: 2.1.10, trunk_optt
-    Supported <what>: build, cleanup, compile, designer, explorer, log, server, update
+    Supported actions: build, cleanup, compile, designer, explorer, log, server, update
     
   > go optt kill
   > go optt kill -d
@@ -114,7 +114,7 @@ EXAMPLES:
 
 def parse_cmd_args(args: list[str]) -> list[Command]:
     args = args.copy()
-    name, whats = [None] * 2
+    name, actions = [None] * 2
     versions = []
 
     # Первый аргумент <name>
@@ -124,10 +124,10 @@ def parse_cmd_args(args: list[str]) -> list[Command]:
 
     options = get_project(name)["options"]
     maybe_version = options["version"] != AvailabilityEnum.PROHIBITED
-    maybe_what = options["what"] != AvailabilityEnum.PROHIBITED
+    maybe_action = options["action"] != AvailabilityEnum.PROHIBITED
 
-    # Второй аргумент это или <version>, или <what>
-    if (maybe_version or maybe_what) and args:
+    # Второй аргумент это или <version>, или <action>
+    if (maybe_version or maybe_action) and args:
         alias = args.pop(0).lower()
 
         if (
@@ -162,24 +162,24 @@ def parse_cmd_args(args: list[str]) -> list[Command]:
                 version = resolve_version(name, alias)
                 versions.append(version)
 
-        elif options["what"] != AvailabilityEnum.PROHIBITED:
-            whats = resolve_whats(name, alias)
+        elif options["action"] != AvailabilityEnum.PROHIBITED:
+            actions = resolve_actions(name, alias)
 
-    # Третий аргумент <what>
-    if maybe_what and args and not whats:
-        whats = args.pop(0).lower()
-        whats = resolve_whats(name, whats)
+    # Третий аргумент <action>
+    if maybe_action and args and not actions:
+        actions = args.pop(0).lower()
+        actions = resolve_actions(name, actions)
 
     if not versions:
         versions = [None]
 
-    if not whats:
-        whats = [None]
+    if not actions:
+        actions = [None]
 
     commands = []
     for version in versions:
-        for what in whats:
-            commands.append(Command(name, version, what, args))
+        for action in actions:
+            commands.append(Command(name, version, action, args))
     return commands
 
 
@@ -201,10 +201,10 @@ def run(args: list[str]):
             print(f"Поддерживаемые версии: {supported_versions}")
             is_answered = True
 
-        # Если для сущности параметр what возможен
-        if options["what"] != AvailabilityEnum.PROHIBITED:
-            supported_whats = ", ".join(sorted(settings["whats"]))
-            print(f"Поддерживаемые <what>: {supported_whats}")
+        # Если для сущности параметр action возможен
+        if options["action"] != AvailabilityEnum.PROHIBITED:
+            supported_actions = ", ".join(sorted(settings["actions"]))
+            print(f"Поддерживаемые действия: {supported_actions}")
             is_answered = True
 
         if not is_answered:

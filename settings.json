@@ -2,11 +2,11 @@
     "__radix_base": {
         "options": {
             "version": "${AvailabilityEnum.OPTIONAL}",
-            "what": "${AvailabilityEnum.REQUIRED}",
+            "action": "${AvailabilityEnum.REQUIRED}",
             "args": "${AvailabilityEnum.OPTIONAL}",
             "default_version": "trunk"
         },
-        "whats": {
+        "actions": {
             "designer": "!!designer.cmd",
             "explorer": "!!explorer.cmd",
             "server": {
@@ -71,7 +71,7 @@
     "__simple_base": {
         "options": {
             "version": "${AvailabilityEnum.PROHIBITED}",
-            "what": "${AvailabilityEnum.PROHIBITED}",
+            "action": "${AvailabilityEnum.PROHIBITED}",
             "args": "${AvailabilityEnum.PROHIBITED}"
         }
     },
@@ -79,9 +79,9 @@
         "base": "__simple_base",
         "path": "C:/DEV__RADIX/manager/manager/bin/manager.cmd",
         "options": {
-            "what": "${AvailabilityEnum.OPTIONAL}"
+            "action": "${AvailabilityEnum.OPTIONAL}"
         },
-        "whats": {
+        "actions": {
             "up": "${commands.manager_up}",
             "clean": "${commands.manager_clean}"
         }

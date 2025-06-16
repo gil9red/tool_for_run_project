@@ -19,7 +19,7 @@ from core import (
     ParameterAvailabilityException,
     GoException,
     UnknownNameException,
-    UnknownWhatException,
+    UnknownActionException,
     get_similar_value,
     is_like_a_short_version,
 )
@@ -42,7 +42,7 @@ from settings import get_project, get_path_by_name
 from third_party.from_ghbdtn import from_ghbdtn
 
 
-WhatValue = str | list[str, str | Callable] | dict | Callable | None
+ActionValue = str | list[str, str | Callable] | dict | Callable | None
 
 
 def run_file(file_name: str):
@@ -56,7 +56,7 @@ def run_file(file_name: str):
 class Command:
     name: str
     version: str | None = None
-    what: str | None = None
+    action: str | None = None
     args: list[str] = field(default_factory=list)
 
     def _check_parameter(self, param: str):
@@ -79,7 +79,7 @@ class Command:
         if options["version"] == AvailabilityEnum.OPTIONAL and not self.version:
             self.version = resolve_version(self.name, options["default_version"])
 
-        settings_params = ["version", "what", "args"]
+        settings_params = ["version", "action", "args"]
         for param in settings_params:
             self._check_parameter(param)
 
@@ -98,18 +98,18 @@ class Command:
                 path: str = path_value[0]
 
         # Если по <name> указывается файл, то сразу его и запускаем
-        if (Path(path).is_file() and not self.what and not self.args) or all(
+        if (Path(path).is_file() and not self.action and not self.args) or all(
             options[param] == AvailabilityEnum.PROHIBITED for param in settings_params
         ):
             run_file(path)
             return
 
-        value: WhatValue = get_file_by_what(self.name, self.what)
+        value: ActionValue = get_file_by_action(self.name, self.action)
 
-        # Если в <whats> функция, вызываем её
+        # Если в <actions> функция, вызываем её
         if callable(value):
             print(
-                f"Запуск: {self.name} вызов {self.what!r}"
+                f"Запуск: {self.name} вызов {self.action!r}"
                 + (f" ({', '.join(self.args)})" if self.args else "")
             )
             value(RunContext(self, path=path))
@@ -439,27 +439,27 @@ def svn_update(context: RunContext):
     os.system(command_svn)
 
 
-def resolve_whats(name: str, alias: str | None) -> list[str]:
+def resolve_actions(name: str, alias: str | None) -> list[str]:
     items = []
     if not alias:
         return items
 
-    supported = list(get_project(name)["whats"])
+    supported = list(get_project(name)["actions"])
     shadow_supported = {from_ghbdtn(x): x for x in supported}
 
-    for alias_what in alias.split("+"):
+    for alias_action in alias.split("+"):
         # Поиск среди списка
-        what = get_similar_value(alias_what, supported)
-        if not what:
+        action = get_similar_value(alias_action, supported)
+        if not action:
             # Попробуем найти среди транслитерованных
-            what = get_similar_value(alias_what, shadow_supported)
-            if not what:
-                raise UnknownWhatException(alias_what, supported)
+            action = get_similar_value(alias_action, shadow_supported)
+            if not action:
+                raise UnknownActionException(alias_action, supported)
 
             # Если удалось найти
-            what = shadow_supported[what]
+            action = shadow_supported[action]
 
-        items.append(what)
+        items.append(action)
 
     return items
 
@@ -497,12 +497,12 @@ def resolve_version(name: str, alias: str) -> str:
     return version
 
 
-def get_file_by_what(name: str, alias: str | None) -> WhatValue:
-    whats = resolve_whats(name, alias)
-    if not whats:
+def get_file_by_action(name: str, alias: str | None) -> ActionValue:
+    actions = resolve_actions(name, alias)
+    if not actions:
         return
-    what = whats[0]
-    return get_project(name)["whats"][what]
+    action = actions[0]
+    return get_project(name)["actions"][action]
 
 
 def get_similar_version_path(name: str, version: str) -> str:

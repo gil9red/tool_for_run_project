@@ -21,11 +21,11 @@ SETTINGS_TEMPLATE_JSON: str = r"""
     "__radix_base": {
         "options": {
             "version": "${AvailabilityEnum.OPTIONAL}",
-            "what": "${AvailabilityEnum.REQUIRED}",
+            "action": "${AvailabilityEnum.REQUIRED}",
             "args": "${AvailabilityEnum.OPTIONAL}",
             "default_version": "trunk"
         },
-        "whats": {
+        "actions": {
             "designer": "!!designer.cmd",
             "server": {
                 "__default__": "ora",
@@ -73,7 +73,7 @@ SETTINGS_TEMPLATE_JSON: str = r"""
     "__simple_base": {
         "options": {
             "version": "${AvailabilityEnum.PROHIBITED}",
-            "what": "${AvailabilityEnum.PROHIBITED}",
+            "action": "${AvailabilityEnum.PROHIBITED}",
             "args": "${AvailabilityEnum.PROHIBITED}"
         }
     },
@@ -81,9 +81,9 @@ SETTINGS_TEMPLATE_JSON: str = r"""
         "base": "__simple_base",
         "path": "C:/DEV__RADIX/manager/manager/bin/manager.cmd",
         "options": {
-            "what": "${AvailabilityEnum.OPTIONAL}"
+            "action": "${AvailabilityEnum.OPTIONAL}"
         },
-        "whats": {
+        "actions": {
             "up": "${commands.manager_up}",
             "clean": "${commands.manager_clean}"
         }
@@ -137,13 +137,13 @@ os.environ["PATH_SETTINGS"] = str(PATH_TEST_SETTINGS)
 import go
 
 from core.commands import (
-    resolve_whats,
+    resolve_actions,
     resolve_version,
     get_similar_version_path,
-    get_file_by_what,
+    get_file_by_action,
 )
 from core import (
-    UnknownWhatException,
+    UnknownActionException,
     is_like_a_version,
     get_similar_value,
     is_like_a_short_version,
@@ -163,15 +163,15 @@ SETTINGS = go.SETTINGS
 class TestCommon(TestCase):
     def test_override_base(self):
         self.assertEqual(
-            SETTINGS["manager"]["options"]["what"],
+            SETTINGS["manager"]["options"]["action"],
             go.AvailabilityEnum.OPTIONAL,
         )
         self.assertEqual(
-            SETTINGS["file"]["options"]["what"],
+            SETTINGS["file"]["options"]["action"],
             go.AvailabilityEnum.PROHIBITED,
         )
         self.assertEqual(
-            SETTINGS["specifications"]["options"]["what"],
+            SETTINGS["specifications"]["options"]["action"],
             go.AvailabilityEnum.PROHIBITED,
         )
 
@@ -282,33 +282,33 @@ class TestSettings(TestCase):
 
 
 class TestCommands(TestCase):
-    def test_resolve_whats(self):
-        self.assertEqual(resolve_whats("tx", "designer"), ["designer"])
-        self.assertEqual(resolve_whats("tx", "des"), ["designer"])
-        self.assertEqual(resolve_whats("tx", "d"), ["designer"])
-        self.assertEqual(resolve_whats("tx", "вуышптук"), ["designer"])
-        self.assertEqual(resolve_whats("tx", "вуы"), ["designer"])
-        self.assertEqual(resolve_whats("tx", "в"), ["designer"])
+    def test_resolve_actions(self):
+        self.assertEqual(resolve_actions("tx", "designer"), ["designer"])
+        self.assertEqual(resolve_actions("tx", "des"), ["designer"])
+        self.assertEqual(resolve_actions("tx", "d"), ["designer"])
+        self.assertEqual(resolve_actions("tx", "вуышптук"), ["designer"])
+        self.assertEqual(resolve_actions("tx", "вуы"), ["designer"])
+        self.assertEqual(resolve_actions("tx", "в"), ["designer"])
 
-        self.assertEqual(resolve_whats("tx", "server"), ["server"])
-        self.assertEqual(resolve_whats("tx", "ser"), ["server"])
-        self.assertEqual(resolve_whats("tx", "s"), ["server"])
-        self.assertEqual(resolve_whats("tx", "ыукмук"), ["server"])
-        self.assertEqual(resolve_whats("tx", "ыук"), ["server"])
-        self.assertEqual(resolve_whats("tx", "ы"), ["server"])
+        self.assertEqual(resolve_actions("tx", "server"), ["server"])
+        self.assertEqual(resolve_actions("tx", "ser"), ["server"])
+        self.assertEqual(resolve_actions("tx", "s"), ["server"])
+        self.assertEqual(resolve_actions("tx", "ыукмук"), ["server"])
+        self.assertEqual(resolve_actions("tx", "ыук"), ["server"])
+        self.assertEqual(resolve_actions("tx", "ы"), ["server"])
 
-        self.assertEqual(resolve_whats("tx", "designer+server"), ["designer", "server"])
-        self.assertEqual(resolve_whats("tx", "вуышптук+server"), ["designer", "server"])
-        self.assertEqual(resolve_whats("tx", "вуышптук+ыукмук"), ["designer", "server"])
-        self.assertEqual(resolve_whats("tx", "d+s"), ["designer", "server"])
-        self.assertEqual(resolve_whats("tx", "в+ы"), ["designer", "server"])
+        self.assertEqual(resolve_actions("tx", "designer+server"), ["designer", "server"])
+        self.assertEqual(resolve_actions("tx", "вуышптук+server"), ["designer", "server"])
+        self.assertEqual(resolve_actions("tx", "вуышптук+ыукмук"), ["designer", "server"])
+        self.assertEqual(resolve_actions("tx", "d+s"), ["designer", "server"])
+        self.assertEqual(resolve_actions("tx", "в+ы"), ["designer", "server"])
 
-        self.assertEqual(resolve_whats("manager", "up"), ["up"])
-        self.assertEqual(resolve_whats("m", "up"), ["up"])
-        self.assertEqual(resolve_whats("ь", "up"), ["up"])
-        self.assertEqual(resolve_whats("ь", "гз"), ["up"])
+        self.assertEqual(resolve_actions("manager", "up"), ["up"])
+        self.assertEqual(resolve_actions("m", "up"), ["up"])
+        self.assertEqual(resolve_actions("ь", "up"), ["up"])
+        self.assertEqual(resolve_actions("ь", "гз"), ["up"])
 
-        self.assertRaises(UnknownWhatException, resolve_whats, "tx", "BFG")
+        self.assertRaises(UnknownActionException, resolve_actions, "tx", "BFG")
 
     def test_resolve_version(self):
         self.assertEqual(resolve_version("tx", "trunk"), "trunk")
@@ -342,21 +342,21 @@ class TestCommands(TestCase):
         self.assertIn(r"local\remote\foo\bar", get_similar_version_path("abc", "4"))
         self.assertIn(r"local\remote\foo\abc", get_similar_version_path("abc", "7"))
 
-    def test_get_file_by_what(self):
+    def test_get_file_by_action(self):
         self.assertEqual(
-            get_file_by_what("tx", "designer"),
-            get_file_by_what("tx", "d"),
+            get_file_by_action("tx", "designer"),
+            get_file_by_action("tx", "d"),
         )
         self.assertEqual(
-            get_file_by_what("tx", "s"),
-            get_file_by_what("tx", "ы"),
+            get_file_by_action("tx", "s"),
+            get_file_by_action("tx", "ы"),
         )
 
-        value_designer: str = get_file_by_what("tx", "designer")
+        value_designer: str = get_file_by_action("tx", "designer")
         self.assertTrue(isinstance(value_designer, str))
         self.assertTrue(value_designer.endswith("!!designer.cmd"))
 
-        value_server: dict = get_file_by_what("tx", "server")
+        value_server: dict = get_file_by_action("tx", "server")
         self.assertTrue(isinstance(value_server, dict))
         self.assertEqual(
             value_server,
@@ -367,7 +367,7 @@ class TestCommands(TestCase):
             },
         )
 
-        value_update: list = get_file_by_what("tx", "update")
+        value_update: list = get_file_by_action("tx", "update")
         self.assertTrue(isinstance(value_update, list))
         self.assertEqual(value_update, ["svn update", commands.svn_update])
 
@@ -376,40 +376,40 @@ class TestGo(TestCase):
     def test_parse_cmd_args(self):
         self.assertEqual(
             go.parse_cmd_args("tx s".split()),
-            [go.Command(name="tx", version=None, what="server", args=[])],
+            [go.Command(name="tx", version=None, action="server", args=[])],
         )
         self.assertEqual(
             go.parse_cmd_args("abc 3 s".split()),
-            [go.Command(name="abc", version="4.1.3.10-dev", what="server", args=[])],
+            [go.Command(name="abc", version="4.1.3.10-dev", action="server", args=[])],
         )
 
         self.assertEqual(
             go.parse_cmd_args("tx s pg".split()),
-            [go.Command(name="tx", version=None, what="server", args=["pg"])],
+            [go.Command(name="tx", version=None, action="server", args=["pg"])],
         )
 
         self.assertEqual(
             go.parse_cmd_args("еч ы зп".split()),
-            [go.Command(name="tx", version=None, what="server", args=["зп"])],
+            [go.Command(name="tx", version=None, action="server", args=["зп"])],
         )
 
         self.assertEqual(
             go.parse_cmd_args("tx 3 s".split()),
-            [go.Command(name="tx", version="3.2.3", what="server", args=[])],
+            [go.Command(name="tx", version="3.2.3", action="server", args=[])],
         )
         self.assertEqual(
             go.parse_cmd_args("tx 2-tr s".split()),
             [
-                go.Command(name="tx", version="3.2.2", what="server", args=[]),
-                go.Command(name="tx", version="3.2.3", what="server", args=[]),
-                go.Command(name="tx", version="trunk", what="server", args=[]),
+                go.Command(name="tx", version="3.2.2", action="server", args=[]),
+                go.Command(name="tx", version="3.2.3", action="server", args=[]),
+                go.Command(name="tx", version="trunk", action="server", args=[]),
             ],
         )
         self.assertEqual(
             go.parse_cmd_args("tx 2,tr s".split()),
             [
-                go.Command(name="tx", version="3.2.2", what="server", args=[]),
-                go.Command(name="tx", version="trunk", what="server", args=[]),
+                go.Command(name="tx", version="3.2.2", action="server", args=[]),
+                go.Command(name="tx", version="trunk", action="server", args=[]),
             ],
         )
 
@@ -417,16 +417,16 @@ class TestGo(TestCase):
             go.parse_cmd_args("tx 3-tr d+s abc 123".split()),
             [
                 go.Command(
-                    name="tx", version="3.2.3", what="designer", args=["abc", "123"]
+                    name="tx", version="3.2.3", action="designer", args=["abc", "123"]
                 ),
                 go.Command(
-                    name="tx", version="3.2.3", what="server", args=["abc", "123"]
+                    name="tx", version="3.2.3", action="server", args=["abc", "123"]
                 ),
                 go.Command(
-                    name="tx", version="trunk", what="designer", args=["abc", "123"]
+                    name="tx", version="trunk", action="designer", args=["abc", "123"]
                 ),
                 go.Command(
-                    name="tx", version="trunk", what="server", args=["abc", "123"]
+                    name="tx", version="trunk", action="server", args=["abc", "123"]
                 ),
             ],
         )
@@ -435,7 +435,7 @@ class TestGo(TestCase):
             go.parse_cmd_args("t д release version".split()),
             [
                 go.Command(
-                    name="tx", version=None, what="log", args=["release", "version"]
+                    name="tx", version=None, action="log", args=["release", "version"]
                 )
             ],
         )

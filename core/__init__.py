@@ -29,13 +29,13 @@ class UnknownNameException(GoException):
         super().__init__(f"Неизвестное имя {self.name!r}, поддержано: {self.supported}")
 
 
-class UnknownWhatException(GoException):
-    def __init__(self, what: str, supported: Iterable[str]):
-        self.what = what
+class UnknownActionException(GoException):
+    def __init__(self, action: str, supported: Iterable[str]):
+        self.action = action
         self.supported = list(sorted(supported))
 
         super().__init__(
-            f"Неизвестное действие {self.what!r}, поддержано: {self.supported}"
+            f"Неизвестное действие {self.action!r}, поддержано: {self.supported}"
         )
 
 
