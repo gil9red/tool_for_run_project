@@ -329,7 +329,7 @@ def find_release_versions(context: RunContext):
         )
 
     except Exception as e:
-        result = str(e)
+        raise GoException(str(e))
 
     print(f"Коммит с {text!r} в {version} попал в версию: {result}\n")
 
