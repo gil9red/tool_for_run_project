@@ -321,7 +321,7 @@ def find_release_versions(context: RunContext):
     url_svn_path = get_project(command.name)["svn_dev_url"]
 
     try:
-        result = find_release_version(
+        result: str = find_release_version(
             text=text,
             version=version,
             last_days=last_days,
@@ -350,7 +350,7 @@ def find_versions(context: RunContext):
 
     url_svn_path = get_project(command.name)["svn_dev_url"]
 
-    versions = search_by_versions(
+    versions: list[str] = search_by_versions(
         text=text,
         last_days=last_days,
         url_svn_path=url_svn_path,
