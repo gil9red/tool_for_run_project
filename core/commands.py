@@ -350,16 +350,12 @@ def find_versions(context: RunContext):
 
     url_svn_path = get_project(command.name)["svn_dev_url"]
 
-    try:
-        versions = search_by_versions(
-            text=text,
-            last_days=last_days,
-            url_svn_path=url_svn_path,
-        )
-        result = ", ".join(versions)
-
-    except Exception as e:
-        result = str(e)
+    versions = search_by_versions(
+        text=text,
+        last_days=last_days,
+        url_svn_path=url_svn_path,
+    )
+    result = ", ".join(versions)
 
     print(f"Строка {text!r} встречается в версиях: {result}")
 
