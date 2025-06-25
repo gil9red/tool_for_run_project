@@ -218,7 +218,8 @@ def run(args: list[str]):
         else:
             print(e)
             print(
-                f"Повтори с флагом {show_exception_flag} - чтобы увидеть ошибку с стеком"
+                f"Чтобы увидеть ошибку с стеком нужно "
+                f"повторить команду с флагом {show_exception_flag}"
             )
 
 
