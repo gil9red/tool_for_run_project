@@ -18,8 +18,9 @@ from core import (
     AvailabilityEnum,
     ParameterAvailabilityException,
     GoException,
-    UnknownNameException,
     UnknownActionException,
+    UnknownNameException,
+    UnknownVersionException,
     get_similar_value,
     is_like_a_short_version,
 )
@@ -485,7 +486,7 @@ def resolve_version(name: str, alias: str) -> str:
         # Попробуем найти среди транслитерованных
         version = get_similar_value(alias, shadow_supported)
         if not version:
-            raise UnknownNameException(alias, supported)
+            raise UnknownVersionException(alias, supported)
 
         # Если удалось найти
         version = shadow_supported[version]
