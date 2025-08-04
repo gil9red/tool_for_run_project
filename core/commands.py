@@ -19,7 +19,6 @@ from core import (
     ParameterAvailabilityException,
     GoException,
     UnknownActionException,
-    UnknownNameException,
     UnknownVersionException,
     get_similar_value,
     is_like_a_short_version,
