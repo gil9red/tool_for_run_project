@@ -144,6 +144,9 @@ from core.commands import (
 )
 from core import (
     UnknownActionException,
+    UnknownNameException,
+    UnknownVersionException,
+    resolve_alias,
     is_like_a_version,
     get_similar_value,
     is_like_a_short_version,
@@ -263,6 +266,9 @@ class TestSettings(TestCase):
         self.assertEqual(settings.resolve_name("o"), "optt")
         self.assertEqual(settings.resolve_name("optt"), "optt")
 
+        with self.assertRaises(UnknownNameException):
+            settings.resolve_name("1212")
+
     def test_get_path_by_name(self):
         self.assertIsNotNone(settings.get_path_by_name("tx"))
         self.assertIsNotNone(settings.get_path_by_name("t"))
@@ -297,9 +303,15 @@ class TestCommands(TestCase):
         self.assertEqual(resolve_actions("tx", "ыук"), ["server"])
         self.assertEqual(resolve_actions("tx", "ы"), ["server"])
 
-        self.assertEqual(resolve_actions("tx", "designer+server"), ["designer", "server"])
-        self.assertEqual(resolve_actions("tx", "вуышптук+server"), ["designer", "server"])
-        self.assertEqual(resolve_actions("tx", "вуышптук+ыукмук"), ["designer", "server"])
+        self.assertEqual(
+            resolve_actions("tx", "designer+server"), ["designer", "server"]
+        )
+        self.assertEqual(
+            resolve_actions("tx", "вуышптук+server"), ["designer", "server"]
+        )
+        self.assertEqual(
+            resolve_actions("tx", "вуышптук+ыукмук"), ["designer", "server"]
+        )
         self.assertEqual(resolve_actions("tx", "d+s"), ["designer", "server"])
         self.assertEqual(resolve_actions("tx", "в+ы"), ["designer", "server"])
 
@@ -308,7 +320,8 @@ class TestCommands(TestCase):
         self.assertEqual(resolve_actions("ь", "up"), ["up"])
         self.assertEqual(resolve_actions("ь", "гз"), ["up"])
 
-        self.assertRaises(UnknownActionException, resolve_actions, "tx", "BFG")
+        with self.assertRaises(UnknownActionException):
+            resolve_actions("tx", "1212")
 
     def test_resolve_version(self):
         self.assertEqual(resolve_version("tx", "trunk"), "trunk")
@@ -320,6 +333,74 @@ class TestCommands(TestCase):
         self.assertEqual(resolve_version("tx", "ек"), "trunk")
         self.assertEqual(resolve_version("tx", "3.2.3"), "3.2.3")
         self.assertEqual(resolve_version("tx", "3"), "3.2.3")
+
+        with self.assertRaises(UnknownVersionException):
+            resolve_version("tx", "foobar")
+
+    def test_resolve_alias(self):
+        supported: list[str] = [
+            "server",
+            "explorer",
+            "designer",
+            "designer2",
+            "manager",
+        ]
+        for expected, alias in [
+            ("server", "SERVER"),
+            ("server", "server"),
+            ("server", "ser"),
+            ("server", "s"),
+            ("server", "ЫУКМУК"),
+            ("server", "ыукмук"),
+            ("server", "ыук"),
+            ("server", "ы"),
+            # NOTE: Те же проверки, что и для server
+            ("explorer", "EXPLORER"),
+            ("explorer", "explorer"),
+            ("explorer", "exp"),
+            ("explorer", "e"),
+            ("explorer", "УЧЗДЩКУК"),
+            ("explorer", "учздщкук"),
+            ("explorer", "учз"),
+            ("explorer", "у"),
+            # NOTE: Часть проверок общая, остальные для совпадений имен
+            ("designer", "DESIGNER"),
+            ("designer", "designer"),
+            ("designer", "вуышптук"),
+            ("designer2", "DESIGNER2"),
+            ("designer2", "designer2"),
+            ("designer2", "вуышптук2"),
+            # NOTE: Тут будет ошибка из-за совпадения начальных символов
+            #       Непонятно, "des" относится к "designer" или к "designer2"
+            (UnknownActionException, "DES"),
+            (UnknownActionException, "des"),
+            (UnknownActionException, "d"),
+            (UnknownActionException, "ВУЫ"),
+            (UnknownActionException, "вуы"),
+            (UnknownActionException, "в"),
+            # NOTE: Просто невалидные значения
+            (UnknownActionException, "1212"),
+            (UnknownActionException, "NONE"),
+            (UnknownActionException, "None"),
+            (UnknownActionException, ""),
+        ]:
+            with self.subTest(expected=expected, alias=alias, supported=supported):
+                if isinstance(expected, str):
+                    self.assertEqual(
+                        expected,
+                        resolve_alias(
+                            alias=alias,
+                            supported=supported,
+                            unknown_alias_exception_cls=UnknownActionException,
+                        ),
+                    )
+                else:
+                    with self.assertRaises(expected):
+                        resolve_alias(
+                            alias=alias,
+                            supported=supported,
+                            unknown_alias_exception_cls=expected,
+                        )
 
     def test_get_similar_version_path(self):
         versions: dict = settings.get_project("tx")["versions"]

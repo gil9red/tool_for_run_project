@@ -6,7 +6,7 @@ __author__ = "ipetrash"
 
 import re
 from enum import Enum, auto
-from typing import Iterable
+from typing import Iterable, Type
 
 from third_party.from_ghbdtn import from_ghbdtn
 
@@ -87,18 +87,47 @@ class ParameterAvailabilityException(GoException):
         )
 
 
-def get_similar_value(alias: str, items: Iterable) -> str | None:
-    if alias in items:
-        return alias
+def get_similar_value(alias: str, items: Iterable[str]) -> str | None:
+    alias_lower: str = alias.lower()
+
+    # Если совпало со значением как есть
+    for key in map(str.lower, items):
+        if alias_lower == key:
+            return key
 
     # Ищем похожие ключи по начальной строке
-    keys = [key for key in items if key.startswith(alias)]
+    keys: list[str] = [key for key in items if key.lower().startswith(alias_lower)]
 
     # Нашли одну вариацию - подходит
+    # TODO: Предусмотреть ошибку, мол нашлось несколько вариантов: xxx, yyy, aaa
     if len(keys) == 1:
         return keys[0]
 
     return
+
+
+def resolve_alias(
+    alias: str,
+    supported: list[str],
+    unknown_alias_exception_cls: Type[
+        UnknownArgException
+        | UnknownNameException
+        | UnknownActionException
+        | UnknownVersionException
+    ],
+) -> str:
+    shadow_supported: dict[str, str] = {from_ghbdtn(x): x for x in supported}
+
+    key: str | None = get_similar_value(alias, supported)
+    if key:
+        return key
+
+    # Попробуем найти среди транслитерованных
+    key = get_similar_value(alias, shadow_supported)
+    if not key:
+        raise unknown_alias_exception_cls(alias, supported)
+
+    return shadow_supported[key]
 
 
 def is_like_a_short_version(value: str) -> bool:

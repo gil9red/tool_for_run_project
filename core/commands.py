@@ -21,7 +21,7 @@ from core import (
     UnknownActionException,
     UnknownVersionException,
     UnknownArgException,
-    get_similar_value,
+    resolve_alias,
     is_like_a_short_version,
 )
 from core.jenkins import do_check_jenkins_job, JenkinsJobCheckException
@@ -127,19 +127,11 @@ class Command:
             if not alias:
                 alias = value["__default__"]
 
-            supported: list[str] = list(value.keys())
-            shadow_supported: dict[str, str] = {from_ghbdtn(x): x for x in supported}
-
-            arg: str | None = get_similar_value(alias, supported)
-            if not arg:
-                # Попробуем найти среди транслитерованных
-                arg = get_similar_value(alias, shadow_supported)
-                if not arg:
-                    raise UnknownArgException(alias, supported)
-
-                # Если удалось найти
-                arg = shadow_supported[arg]
-
+            arg: str = resolve_alias(
+                alias=alias,
+                supported=list(value.keys()),
+                unknown_alias_exception_cls=UnknownArgException,
+            )
             value = value[arg]
 
         if isinstance(value, str):
@@ -451,21 +443,14 @@ def resolve_actions(name: str, alias: str | None) -> list[str]:
     if not alias:
         return items
 
-    supported = list(get_project(name)["actions"])
-    shadow_supported = {from_ghbdtn(x): x for x in supported}
+    supported: list[str] = list(get_project(name)["actions"])
 
     for alias_action in alias.split("+"):
-        # Поиск среди списка
-        action = get_similar_value(alias_action, supported)
-        if not action:
-            # Попробуем найти среди транслитерованных
-            action = get_similar_value(alias_action, shadow_supported)
-            if not action:
-                raise UnknownActionException(alias_action, supported)
-
-            # Если удалось найти
-            action = shadow_supported[action]
-
+        action: str = resolve_alias(
+            alias=alias_action,
+            supported=supported,
+            unknown_alias_exception_cls=UnknownActionException,
+        )
         items.append(action)
 
     return items
@@ -473,9 +458,6 @@ def resolve_actions(name: str, alias: str | None) -> list[str]:
 
 def resolve_version(name: str, alias: str) -> str:
     settings: dict = get_project(name)
-
-    supported: dict = settings["versions"]
-    shadow_supported: dict = {from_ghbdtn(x): x for x in supported}
 
     # Если короткая версия, нужно ее расширить, добавив основание версии
     if is_like_a_short_version(alias):
@@ -490,18 +472,11 @@ def resolve_version(name: str, alias: str) -> str:
         # Составление полной версии
         alias = base_version.format(number=alias)
 
-    # Поиск среди списка
-    version: str | None = get_similar_value(alias, supported)
-    if not version:
-        # Попробуем найти среди транслитерованных
-        version = get_similar_value(alias, shadow_supported)
-        if not version:
-            raise UnknownVersionException(alias, supported)
-
-        # Если удалось найти
-        version = shadow_supported[version]
-
-    return version
+    return resolve_alias(
+        alias=alias,
+        supported=settings["versions"],
+        unknown_alias_exception_cls=UnknownVersionException,
+    )
 
 
 def get_file_by_action(name: str, alias: str | None) -> ActionValue:

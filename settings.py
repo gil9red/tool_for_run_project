@@ -16,10 +16,9 @@ from core import (
     AvailabilityEnum,
     GoException,
     is_like_a_version,
-    get_similar_value,
     UnknownNameException,
+    resolve_alias,
 )
-from third_party.from_ghbdtn import from_ghbdtn
 
 
 if path_settings_value := os.getenv("PATH_SETTINGS"):
@@ -176,21 +175,11 @@ def get_project(name: str) -> dict:
 
 
 def resolve_name(alias: str) -> str:
-    supported = list(SETTINGS)
-    shadow_supported = {from_ghbdtn(x): x for x in supported}
-
-    # Поиск среди списка
-    name = get_similar_value(alias, supported)
-    if not name:
-        # Попробуем найти среди транслитерованных
-        name = get_similar_value(alias, shadow_supported)
-        if not name:
-            raise UnknownNameException(alias, supported)
-
-        # Если удалось найти
-        name = shadow_supported[name]
-
-    return name
+    return resolve_alias(
+        alias=alias,
+        supported=list(SETTINGS),
+        unknown_alias_exception_cls=UnknownNameException,
+    )
 
 
 def get_path_by_name(name: str) -> str | list[str]:
