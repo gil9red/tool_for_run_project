@@ -20,6 +20,7 @@ from core import (
     GoException,
     UnknownActionException,
     UnknownVersionException,
+    UnknownArgException,
     get_similar_value,
     is_like_a_short_version,
 )
@@ -122,14 +123,24 @@ class Command:
 
         # Получение из аргументов
         if isinstance(value, dict):
-            arg = self.args[0] if self.args else ""
-            if not arg:
-                arg = value["__default__"]
+            alias: str = self.args[0] if self.args else ""
+            if not alias:
+                alias = value["__default__"]
 
-            try:
-                value = value[arg]
-            except KeyError:
-                value = value[from_ghbdtn(arg)]
+            supported: list[str] = list(value.keys())
+            shadow_supported: dict[str, str] = {from_ghbdtn(x): x for x in supported}
+
+            arg: str | None = get_similar_value(alias, supported)
+            if not arg:
+                # Попробуем найти среди транслитерованных
+                arg = get_similar_value(alias, shadow_supported)
+                if not arg:
+                    raise UnknownArgException(alias, supported)
+
+                # Если удалось найти
+                arg = shadow_supported[arg]
+
+            value = value[arg]
 
         if isinstance(value, str):
             file_name = dir_file_name + "/" + value

@@ -49,6 +49,16 @@ class UnknownVersionException(GoException):
         )
 
 
+class UnknownArgException(GoException):
+    def __init__(self, arg: str, supported: Iterable[str]):
+        self.arg = arg
+        self.supported = list(supported)
+
+        super().__init__(
+            f"Неизвестный аргумент {self.arg!r}, поддержано: {self.supported}"
+        )
+
+
 class ParameterMissingException(GoException):
     def __init__(self, name: str, param: str):
         self.name = name
@@ -87,6 +97,8 @@ def get_similar_value(alias: str, items: Iterable) -> str | None:
     # Нашли одну вариацию - подходит
     if len(keys) == 1:
         return keys[0]
+
+    return
 
 
 def is_like_a_short_version(value: str) -> bool:
