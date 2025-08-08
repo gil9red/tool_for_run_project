@@ -173,7 +173,11 @@ def parse_cmd_args(args: list[str]) -> list[Command]:
         actions += resolve_actions(name, alias)
 
     if not versions:
-        versions.append(None)
+        version: str | None = None
+        if options["version"] == AvailabilityEnum.OPTIONAL:
+            version = resolve_version(name, options["default_version"])
+
+        versions.append(version)
 
     if not actions:
         actions.append(None)

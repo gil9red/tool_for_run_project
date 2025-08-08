@@ -457,7 +457,7 @@ class TestGo(TestCase):
     def test_parse_cmd_args(self):
         self.assertEqual(
             go.parse_cmd_args("tx s".split()),
-            [go.Command(name="tx", version=None, action="server", args=[])],
+            [go.Command(name="tx", version="trunk", action="server", args=[])],
         )
         self.assertEqual(
             go.parse_cmd_args("abc 3 s".split()),
@@ -466,12 +466,12 @@ class TestGo(TestCase):
 
         self.assertEqual(
             go.parse_cmd_args("tx s pg".split()),
-            [go.Command(name="tx", version=None, action="server", args=["pg"])],
+            [go.Command(name="tx", version="trunk", action="server", args=["pg"])],
         )
 
         self.assertEqual(
             go.parse_cmd_args("еч ы зп".split()),
-            [go.Command(name="tx", version=None, action="server", args=["зп"])],
+            [go.Command(name="tx", version="trunk", action="server", args=["зп"])],
         )
 
         self.assertEqual(
@@ -516,7 +516,7 @@ class TestGo(TestCase):
             go.parse_cmd_args("t д release version".split()),
             [
                 go.Command(
-                    name="tx", version=None, action="log", args=["release", "version"]
+                    name="tx", version="trunk", action="log", args=["release", "version"]
                 )
             ],
         )

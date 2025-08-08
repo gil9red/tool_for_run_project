@@ -77,9 +77,6 @@ class Command:
         settings: dict = get_project(self.name)
         options: dict = settings["options"]
 
-        if options["version"] == AvailabilityEnum.OPTIONAL and not self.version:
-            self.version = resolve_version(self.name, options["default_version"])
-
         settings_params = ["version", "action", "args"]
         for param in settings_params:
             self._check_parameter(param)
