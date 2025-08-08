@@ -113,22 +113,24 @@ EXAMPLES:
 
 
 def parse_cmd_args(args: list[str]) -> list[Command]:
-    args = args.copy()
-    name, actions = [None] * 2
-    versions = []
+    args: list[str] = args.copy()
+    name: str | None = None
+
+    actions: list[str | None] = []
+    versions: list[str | None] = []
 
     # Первый аргумент <name>
     if args:
-        name = args.pop(0).lower()
-        name = resolve_name(name)
+        alias: str = args.pop(0).lower()
+        name = resolve_name(alias)
 
-    options = get_project(name)["options"]
-    maybe_version = options["version"] != AvailabilityEnum.PROHIBITED
-    maybe_action = options["action"] != AvailabilityEnum.PROHIBITED
+    options: dict = get_project(name)["options"]
+    maybe_version: bool = options["version"] != AvailabilityEnum.PROHIBITED
+    maybe_action: bool = options["action"] != AvailabilityEnum.PROHIBITED
 
     # Второй аргумент это или <version>, или <action>
     if (maybe_version or maybe_action) and args:
-        alias = args.pop(0).lower()
+        alias: str = args.pop(0).lower()
 
         if (
             is_like_a_version(alias)
@@ -163,18 +165,18 @@ def parse_cmd_args(args: list[str]) -> list[Command]:
                 versions.append(version)
 
         elif options["action"] != AvailabilityEnum.PROHIBITED:
-            actions = resolve_actions(name, alias)
+            actions += resolve_actions(name, alias)
 
     # Третий аргумент <action>
     if maybe_action and args and not actions:
-        actions = args.pop(0).lower()
-        actions = resolve_actions(name, actions)
+        alias: str = args.pop(0).lower()
+        actions += resolve_actions(name, alias)
 
     if not versions:
-        versions = [None]
+        versions.append(None)
 
     if not actions:
-        actions = [None]
+        actions.append(None)
 
     commands = []
     for version in versions:
