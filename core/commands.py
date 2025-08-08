@@ -20,7 +20,6 @@ from core import (
     GoException,
     UnknownActionException,
     UnknownVersionException,
-    UnknownArgException,
     resolve_alias,
     is_like_a_short_version,
 )
@@ -40,7 +39,6 @@ from core.svn.get_last_release_version import (
 )
 from core.svn.search_by_versions import search as search_by_versions
 from settings import get_project, get_path_by_name
-from third_party.from_ghbdtn import from_ghbdtn
 
 
 ActionValue = str | list[str, str | Callable] | dict | Callable | None
@@ -120,16 +118,8 @@ class Command:
 
         # Получение из аргументов
         if isinstance(value, dict):
-            alias: str = self.args[0] if self.args else ""
-            if not alias:
-                alias = value["__default__"]
-
-            arg: str = resolve_alias(
-                alias=alias,
-                supported=list(value.keys()),
-                unknown_alias_exception_cls=UnknownArgException,
-            )
-            value = value[arg]
+            arg: str = self.args[0]
+            value: str = value[arg]
 
         if isinstance(value, str):
             file_name = dir_file_name + "/" + value

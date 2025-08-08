@@ -20,8 +20,11 @@ import settings
 settings.run_settings_preprocess()
 SETTINGS = settings.SETTINGS
 
+from core import resolve_alias, UnknownArgException
 from core.commands import (
+    ActionValue,
     Command,
+    get_file_by_action,
     resolve_actions,
     resolve_version,
 )
@@ -112,6 +115,34 @@ EXAMPLES:
 ).strip()
 
 
+def _preprocess_args(name: str, action: str | None, args: list[str]) -> list[str]:
+    if not action:
+        return args
+
+    # Получение из аргументов
+    value: ActionValue = get_file_by_action(name, action)
+    if not isinstance(value, dict):
+        return args
+
+    alias: str = args[0] if args else ""
+    if not alias:
+        alias = value["__default__"]
+
+    arg: str = resolve_alias(
+        alias=alias,
+        supported=list(value.keys()),
+        unknown_alias_exception_cls=UnknownArgException,
+    )
+
+    new_args: list[str] = args.copy()
+    if new_args:
+        new_args[0] = arg
+    else:
+        new_args.append(arg)
+
+    return new_args
+
+
 def parse_cmd_args(args: list[str]) -> list[Command]:
     args: list[str] = args.copy()
     name: str | None = None
@@ -182,10 +213,12 @@ def parse_cmd_args(args: list[str]) -> list[Command]:
     if not actions:
         actions.append(None)
 
-    commands = []
+    commands: list[Command] = []
     for version in versions:
         for action in actions:
-            commands.append(Command(name, version, action, args))
+            new_args: list[str] = _preprocess_args(name, action, args)
+            commands.append(Command(name, version, action, new_args))
+
     return commands
 
 

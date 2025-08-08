@@ -144,6 +144,7 @@ from core.commands import (
 )
 from core import (
     UnknownActionException,
+    UnknownArgException,
     UnknownNameException,
     UnknownVersionException,
     resolve_alias,
@@ -457,11 +458,15 @@ class TestGo(TestCase):
     def test_parse_cmd_args(self):
         self.assertEqual(
             go.parse_cmd_args("tx s".split()),
-            [go.Command(name="tx", version="trunk", action="server", args=[])],
+            [go.Command(name="tx", version="trunk", action="server", args=["ora"])],
         )
         self.assertEqual(
             go.parse_cmd_args("abc 3 s".split()),
-            [go.Command(name="abc", version="4.1.3.10-dev", action="server", args=[])],
+            [
+                go.Command(
+                    name="abc", version="4.1.3.10-dev", action="server", args=["ora"]
+                )
+            ],
         )
 
         self.assertEqual(
@@ -471,44 +476,57 @@ class TestGo(TestCase):
 
         self.assertEqual(
             go.parse_cmd_args("еч ы зп".split()),
-            [go.Command(name="tx", version="trunk", action="server", args=["зп"])],
+            [go.Command(name="tx", version="trunk", action="server", args=["pg"])],
         )
 
         self.assertEqual(
             go.parse_cmd_args("tx 3 s".split()),
-            [go.Command(name="tx", version="3.2.3", action="server", args=[])],
+            [go.Command(name="tx", version="3.2.3", action="server", args=["ora"])],
         )
         self.assertEqual(
             go.parse_cmd_args("tx 2-tr s".split()),
             [
-                go.Command(name="tx", version="3.2.2", action="server", args=[]),
-                go.Command(name="tx", version="3.2.3", action="server", args=[]),
-                go.Command(name="tx", version="trunk", action="server", args=[]),
+                go.Command(name="tx", version="3.2.2", action="server", args=["ora"]),
+                go.Command(name="tx", version="3.2.3", action="server", args=["ora"]),
+                go.Command(name="tx", version="trunk", action="server", args=["ora"]),
             ],
         )
         self.assertEqual(
             go.parse_cmd_args("tx 2,tr s".split()),
             [
-                go.Command(name="tx", version="3.2.2", action="server", args=[]),
-                go.Command(name="tx", version="trunk", action="server", args=[]),
+                go.Command(name="tx", version="3.2.2", action="server", args=["ora"]),
+                go.Command(name="tx", version="trunk", action="server", args=["ora"]),
+            ],
+        )
+
+        with self.assertRaises(UnknownArgException):
+            go.parse_cmd_args("tx 3-tr d+s abc 123".split())
+
+        self.assertEqual(
+            go.parse_cmd_args("tx 3-tr d+s зп 123".split()),
+            [
+                go.Command(
+                    name="tx", version="3.2.3", action="designer", args=["зп", "123"]
+                ),
+                go.Command(
+                    name="tx", version="3.2.3", action="server", args=["pg", "123"]
+                ),
+                go.Command(
+                    name="tx", version="trunk", action="designer", args=["зп", "123"]
+                ),
+                go.Command(
+                    name="tx", version="trunk", action="server", args=["pg", "123"]
+                ),
             ],
         )
 
         self.assertEqual(
-            go.parse_cmd_args("tx 3-tr d+s abc 123".split()),
+            go.parse_cmd_args("tx 3-tr d+s".split()),
             [
-                go.Command(
-                    name="tx", version="3.2.3", action="designer", args=["abc", "123"]
-                ),
-                go.Command(
-                    name="tx", version="3.2.3", action="server", args=["abc", "123"]
-                ),
-                go.Command(
-                    name="tx", version="trunk", action="designer", args=["abc", "123"]
-                ),
-                go.Command(
-                    name="tx", version="trunk", action="server", args=["abc", "123"]
-                ),
+                go.Command(name="tx", version="3.2.3", action="designer", args=[]),
+                go.Command(name="tx", version="3.2.3", action="server", args=["ora"]),
+                go.Command(name="tx", version="trunk", action="designer", args=[]),
+                go.Command(name="tx", version="trunk", action="server", args=["ora"]),
             ],
         )
 
@@ -516,7 +534,10 @@ class TestGo(TestCase):
             go.parse_cmd_args("t д release version".split()),
             [
                 go.Command(
-                    name="tx", version="trunk", action="log", args=["release", "version"]
+                    name="tx",
+                    version="trunk",
+                    action="log",
+                    args=["release", "version"],
                 )
             ],
         )
