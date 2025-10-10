@@ -197,10 +197,24 @@ class TestCommon(TestCase):
         self.assertTrue(is_like_a_version("22,23,е"))
 
     def test_get_similar_value(self):
-        items = ["server", "designer", "explorer"]
-        self.assertEqual(get_similar_value("server", items), "server")
-        self.assertEqual(get_similar_value("ser", items), "server")
-        self.assertEqual(get_similar_value("s", items), "server")
+        with self.subTest(msg="OK"):
+            items = ["server", "designer", "explorer"]
+            self.assertEqual(get_similar_value("server", items), "server")
+            self.assertEqual(get_similar_value("ser", items), "server")
+            self.assertEqual(get_similar_value("s", items), "server")
+
+        with self.subTest(msg="Not found"):
+            self.assertIsNone(get_similar_value("server", []))
+
+            items = ["server", "designer", "explorer"]
+            self.assertIsNone(get_similar_value("erver", items))
+            self.assertIsNone(get_similar_value("!server", items))
+            self.assertIsNone(get_similar_value("document", items))
+
+        with self.subTest(msg="Много вариантов"):
+            items = ["server", "designer", "explorer", "revert", "run", "run2", "run3"]
+            self.assertIsNone(get_similar_value("r", items))
+            self.assertIsNone(get_similar_value("ru", items))
 
     def test_is_like_a_short_version(self):
         self.assertTrue(is_like_a_short_version("22"))
