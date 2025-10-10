@@ -211,7 +211,7 @@ class TestCommon(TestCase):
             self.assertIsNone(get_similar_value("!server", items))
             self.assertIsNone(get_similar_value("document", items))
 
-        with self.subTest(msg="Много вариантов"):
+        with self.subTest(msg="Multiple results found error"):
             items = ["server", "designer", "explorer", "revert", "run", "run2", "run3"]
             self.assertIsNone(get_similar_value("r", items))
             self.assertIsNone(get_similar_value("ru", items))
