@@ -7,6 +7,8 @@ __author__ = "ipetrash"
 import enum
 import os
 import shutil
+import sys
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
@@ -22,6 +24,7 @@ from core import (
     UnknownVersionException,
     resolve_alias,
     is_like_a_short_version,
+    radix_update_compile_designer,
 )
 from core.jenkins import do_check_jenkins_job, JenkinsJobCheckException
 from core.kill import (
@@ -33,6 +36,7 @@ from core.kill import (
     is_explorer,
     is_designer,
 )
+from core.utils import run_command_in_new_terminal
 from core.svn.find_release_version import find_release_version
 from core.svn.get_last_release_version import (
     get_last_release_version as get_last_release_version_svn,
@@ -423,6 +427,14 @@ def svn_update(context: RunContext):
 
     print(f"Запуск: {title}")
     os.system(command_svn)
+
+
+def run_radix_update_compile_designer(context: RunContext):
+    path: str = context.path
+    script_path: str = radix_update_compile_designer.__file__
+
+    args: list[str] = [sys.executable, script_path, path]
+    run_command_in_new_terminal(args)
 
 
 def resolve_actions(name: str, alias: str | None) -> list[str]:

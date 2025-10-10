@@ -36,6 +36,7 @@
                 "svn show modifications dialog",
                 "start /b \"\" TortoiseProc /command:repostatus /path:\"{path}\""
             ],
+            "!full": "${commands.run_radix_update_compile_designer}",
             "run": "${commands.run_path}",
             "open": "${commands.open_path}",
             "kill": "${commands.kill}",
