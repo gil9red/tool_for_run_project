@@ -38,6 +38,7 @@ from core.kill import (
 )
 from core.utils import run_command_in_new_terminal
 from core.svn.find_release_version import find_release_version
+from core.svn.get_age import get_age as svn_get_age
 from core.svn.get_last_release_version import (
     get_last_release_version as get_last_release_version_svn,
 )
@@ -74,6 +75,9 @@ class Command:
         elif settings_param == AvailabilityEnum.PROHIBITED:
             if value:
                 raise ParameterAvailabilityException(self, param, settings_param)
+
+    def is_forced(self) -> bool:
+        return self.args and "-f" in self.args
 
     def run(self):
         settings: dict = get_project(self.name)
@@ -354,6 +358,26 @@ def find_versions(context: RunContext):
     print(f"Строка {text!r} встречается в версиях: {result}")
 
 
+def svn_get_age_of_version(context: RunContext):
+    command = context.command
+    version: str | None = command.version
+
+    if version == "trunk" and not command.is_forced():
+        print(
+            f"Для версии {version!r} операция будет выполняться слишком долго.\n"
+            f"Чтобы все-равно выполнить, повторите с аргументом -f"
+        )
+        return
+
+    url_svn_path = get_project(command.name)["svn_dev_url"]
+    result: str = svn_get_age(
+        version=version,
+        url_svn_path=url_svn_path,
+    )
+
+    print(f"Возраст версии {version!r}:\n{result}\n")
+
+
 def manager_up(context: RunContext):
     path = Path(context.path)
 
@@ -399,15 +423,8 @@ def manager_clean(context: RunContext):
 
 def svn_update(context: RunContext):
     path: str = context.path
-    args: list[str] = context.command.args
-
-    force = False
-
-    # force - обновляемся, даже если сборка сломана
-    if args and "-f" in args:
-        force = True
-
     command = context.command
+
     settings = get_project(command.name)
 
     jenkins_url = settings.get("jenkins_url")
@@ -415,7 +432,8 @@ def svn_update(context: RunContext):
         try:
             do_check_jenkins_job(jenkins_url, command.version)
         except JenkinsJobCheckException as e:
-            if not force:
+            # Обновление, даже если сборка сломана
+            if not command.is_forced():
                 text = "Чтобы все-равно загрузить повторите с аргументом -f"
                 print(f"{e}\n\n{text}")
                 return
