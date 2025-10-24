@@ -5,13 +5,10 @@ __author__ = "ipetrash"
 
 
 import re
-import subprocess
-import xml.etree.ElementTree as ET
-
 from datetime import date, timedelta
 
+from core.svn import URL_DEFAULT_SVN_PATH, Revision, run_svn_command
 
-URL_DEFAULT_SVN_PATH = "svn+cplus://svn2.compassplus.ru/twrbs/trunk/dev"
 
 TEXT_RELEASE_VERSION = "Release version "
 PATTERN_RELEASE_VERSION = re.compile(rf"{TEXT_RELEASE_VERSION}([\d.]+) ")
@@ -27,9 +24,8 @@ def get_last_release_version(
 
     end_date = date.today() - timedelta(days=last_days)
 
-    data: bytes = subprocess.check_output(
+    revisions: list[Revision] = run_svn_command(
         [
-            "svn",
             "log",
             "--xml",
             "--search",
@@ -37,34 +33,24 @@ def get_last_release_version(
             "--revision",
             # Если в паре значений первым идет большее значение, то поиск будет идти от большего к меньшему
             f"{start_revision}:{{{end_date}}}",
-            url,
-        ]
+        ],
+        url_or_path=url,
     )
-    root = ET.fromstring(data)
 
-    last_release_version_msg = None
-    for logentry_el in root.findall(".//logentry"):
-        last_release_version_msg = logentry_el.find("msg").text
-        break
+    for r in revisions:
+        m = PATTERN_RELEASE_VERSION.search(r.msg)
+        if not m:
+            raise Exception(f"Не удалось вытащить версию релиза из {r.msg!r}")
 
-    if not last_release_version_msg:
-        raise Exception("Не удалось найти коммит релиза!")
+        return m.group(1)
 
-    m = PATTERN_RELEASE_VERSION.search(last_release_version_msg)
-    if not m:
-        raise Exception(
-            f"Не удалось вытащить версию релиза из {last_release_version_msg!r}"
-        )
-
-    return m.group(1)
+    raise Exception("Не удалось найти ревизию!")
 
 
 if __name__ == "__main__":
     print(get_last_release_version(version="trunk", last_days=60))
-    # 3.2.36.10
-
-    print(get_last_release_version(version="3.2.35.10"))
-    # 3.2.35.10.10
-
-    print(get_last_release_version(version="3.2.34.10"))
-    # 3.2.34.10.17
+    print(get_last_release_version(version="3.2.48.10"))
+    print(get_last_release_version(version="3.2.47.10"))
+    # 3.2.48.10
+    # 3.2.48.10.6
+    # 3.2.47.10.23
