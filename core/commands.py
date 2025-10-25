@@ -274,7 +274,7 @@ def processes(context: RunContext):
         print("Не удалось найти процессы!")
 
 
-def get_last_release_version(context: RunContext):
+def svn_get_last_release_version(context: RunContext):
     command = context.command
     args: list[str] = command.args
     version: str | None = command.version
@@ -298,7 +298,7 @@ def get_last_release_version(context: RunContext):
     print(f"Последняя версия релиза для {version}: {result}\n")
 
 
-def find_release_versions(context: RunContext):
+def svn_find_release_versions(context: RunContext):
     if context.command.version == "trunk":
         raise GoException("Команду нужно вызывать в релизных версиях!")
 
@@ -332,7 +332,7 @@ def find_release_versions(context: RunContext):
     print(f"Коммит с {text!r} в {version} попал в версию: {result}\n")
 
 
-def find_versions(context: RunContext):
+def svn_where(context: RunContext):
     command = context.command
 
     args: list[str] = command.args
