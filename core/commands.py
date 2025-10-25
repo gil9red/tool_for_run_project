@@ -295,7 +295,7 @@ def svn_get_last_release_version(context: RunContext):
     except Exception as e:
         result = str(e)
 
-    print(f"Последняя версия релиза для {version}: {result}\n")
+    print(f"Последняя версия релиза для {version} (за {last_days} дней): {result}\n")
 
 
 def svn_find_release_versions(context: RunContext):
@@ -329,7 +329,7 @@ def svn_find_release_versions(context: RunContext):
     except Exception as e:
         raise GoException(str(e))
 
-    print(f"Коммит с {text!r} в {version} попал в версию: {result}\n")
+    print(f"Коммит с {text!r} (за {last_days} дней) в {version} попал в версию: {result}\n")
 
 
 def svn_where(context: RunContext):
@@ -355,7 +355,7 @@ def svn_where(context: RunContext):
     )
     result = ", ".join(versions)
 
-    print(f"Строка {text!r} встречается в версиях: {result}")
+    print(f"Строка {text!r} (за {last_days} дней) встречается в версиях: {result}")
 
 
 def svn_get_age_of_version(context: RunContext):
