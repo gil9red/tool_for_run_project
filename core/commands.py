@@ -177,12 +177,12 @@ def run_path(context: RunContext):
     run_file(file_name)
 
 
-def open_path(context: RunContext):
+def open_path_dir(context: RunContext):
     path_dir: Path = Path(context.path).resolve()
     if path_dir.is_file():
         path_dir = path_dir.parent
 
-    print(f"Открытие: {str(path_dir)!r}")
+    print(f"Открытие папки: {str(path_dir)!r}")
 
     _open_path(str(path_dir))
 

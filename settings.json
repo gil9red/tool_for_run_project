@@ -38,7 +38,7 @@
             ],
             "!full": "${commands.run_radix_update_compile_designer}",
             "run": "${commands.run_path}",
-            "open": "${commands.open_path}",
+            "open": "${commands.open_path_dir}",
             "kill": "${commands.kill}",
             "processes": "${commands.processes}",
             "get_last_release_version": "${commands.svn_get_last_release_version}",
