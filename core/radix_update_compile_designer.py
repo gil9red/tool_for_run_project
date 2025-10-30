@@ -14,6 +14,8 @@ from pathlib import Path
 from typing import Callable
 from timeit import default_timer
 
+from core import run_file
+
 
 @dataclass
 class SvnUpResult:
@@ -163,8 +165,7 @@ def run(path: Path | str):
 
     with console_print_header("DESIGNER"):
         file_name = path / "!!designer.cmd"
-        print(f"Open file {str(file_name)!r}")
-        os.startfile(file_name)
+        run_file(file_name)
 
     print(f"\nTotal elapsed: {timedelta(seconds=int(default_timer() - start_time_ms))}")
 

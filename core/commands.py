@@ -25,6 +25,8 @@ from core import (
     resolve_alias,
     is_like_a_short_version,
     radix_update_compile_designer,
+    _open_path,
+    run_file,
 )
 from core.jenkins import do_check_jenkins_job, JenkinsJobCheckException
 from core.kill import (
@@ -47,13 +49,6 @@ from settings import get_project, get_path_by_name
 
 
 ActionValue = str | list[str, str | Callable] | dict | Callable | None
-
-
-def run_file(file_name: str):
-    path_file: Path = Path(file_name).resolve()
-    print(f"Запуск: {str(path_file)!r}")
-
-    os.startfile(path_file, cwd=path_file.parent)
 
 
 @dataclass
@@ -189,8 +184,7 @@ def open_path(context: RunContext):
 
     print(f"Открытие: {str(path_dir)!r}")
 
-    # Open
-    os.startfile(path_dir)
+    _open_path(str(path_dir))
 
 
 def kill(context: RunContext):

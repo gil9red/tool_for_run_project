@@ -4,8 +4,13 @@
 __author__ = "ipetrash"
 
 
+import os
 import re
+import subprocess
+import sys
+
 from enum import Enum, auto
+from pathlib import Path
 from typing import Iterable, Type
 
 from third_party.from_ghbdtn import from_ghbdtn
@@ -146,3 +151,22 @@ def is_like_a_version(value: str) -> bool:
         or "-" in value  # Example: "23-25" or "23-trunk"
         or "," in value  # Example: "23,24,25" or "23,24,25,trunk"
     )
+
+
+def _open_path(file_name: str, dir_file_name: str | None = None):
+    if sys.platform == "win32":
+        os.startfile(file_name, cwd=dir_file_name)
+    else:
+        opener = "open" if sys.platform == "darwin" else "xdg-open"
+        subprocess.call([opener, file_name], cwd=dir_file_name)
+
+
+def run_file(file_name: Path | str):
+    if isinstance(file_name, str):
+        file_name = Path(file_name)
+
+    file_name = file_name.resolve()
+    print(f"Запуск: {str(file_name)!r}")
+
+    dir_file_name = file_name.parent
+    _open_path(str(file_name), str(dir_file_name))
