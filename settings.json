@@ -45,6 +45,7 @@
             "find_release_versions": "${commands.svn_find_release_versions}",
             "where": "${commands.svn_where}",
             "age": "${commands.svn_get_age_of_version}",
+            "version": "${commands.get_versions_of_version}",
             "trace": "!!trace_viewer.cmd"
         },
         "vars": {

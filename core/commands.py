@@ -47,6 +47,8 @@ from core.svn.get_last_release_version import (
 from core.svn.search_by_versions import search as search_by_versions
 from settings import get_project, get_path_by_name
 
+from third_party.get_project_versions import process as run_get_project_versions
+
 
 ActionValue = str | list[str, str | Callable] | dict | Callable | None
 
@@ -370,6 +372,10 @@ def svn_get_age_of_version(context: RunContext):
     )
 
     print(f"Возраст версии {version!r}:\n{result}\n")
+
+
+def get_versions_of_version(context: RunContext):
+    run_get_project_versions(Path(context.path))
 
 
 def manager_up(context: RunContext):
