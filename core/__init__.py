@@ -92,7 +92,21 @@ class ParameterAvailabilityException(GoException):
         )
 
 
+class MultipleResultsFoundError(GoException):
+    def __init__(self, alias: str, variants: Iterable[str]):
+        self.alias = alias
+        self.variants = list(variants)
+
+        super().__init__(
+            f"Больше одного варианта подходит к {self.alias!r}: {', '.join(map(repr, self.variants))}.\n"
+            "Нужно добавить больше символов или полностью повторить, чтобы конкретизировать"
+        )
+
+
 def get_similar_value(alias: str, items: Iterable[str]) -> str | None:
+    if not alias:
+        return
+
     alias_lower: str = alias.lower()
 
     # Если совпало со значением как есть
@@ -103,12 +117,14 @@ def get_similar_value(alias: str, items: Iterable[str]) -> str | None:
     # Ищем похожие ключи по начальной строке
     keys: list[str] = [key for key in items if key.lower().startswith(alias_lower)]
 
+    if not keys:
+        return
+
     # Нашли одну вариацию - подходит
-    # TODO: Предусмотреть ошибку, мол нашлось несколько вариантов: xxx, yyy, aaa
     if len(keys) == 1:
         return keys[0]
 
-    return
+    raise MultipleResultsFoundError(alias=alias, variants=keys)
 
 
 def resolve_alias(

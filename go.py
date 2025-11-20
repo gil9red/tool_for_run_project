@@ -256,6 +256,7 @@ def run(args: list[str]):
             print(traceback.format_exc())
         else:
             print(e)
+            print()
             print(
                 f"Чтобы увидеть ошибку с стеком нужно "
                 f"повторить команду с флагом {show_exception_flag}"

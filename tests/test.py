@@ -147,6 +147,7 @@ from core import (
     UnknownArgException,
     UnknownNameException,
     UnknownVersionException,
+    MultipleResultsFoundError,
     resolve_alias,
     is_like_a_version,
     get_similar_value,
@@ -213,8 +214,14 @@ class TestCommon(TestCase):
 
         with self.subTest(msg="Multiple results found error"):
             items = ["revert", "run", "run2", "run3"]
-            self.assertIsNone(get_similar_value("r", items))
-            self.assertIsNone(get_similar_value("ru", items))
+
+            with self.assertRaises(MultipleResultsFoundError) as cm:
+                get_similar_value("r", items)
+            self.assertEqual(["revert", "run", "run2", "run3"], cm.exception.variants)
+
+            with self.assertRaises(MultipleResultsFoundError) as cm:
+                self.assertIsNone(get_similar_value("ru", items))
+            self.assertEqual(["run", "run2", "run3"], cm.exception.variants)
 
     def test_is_like_a_short_version(self):
         self.assertTrue(is_like_a_short_version("22"))
@@ -387,12 +394,12 @@ class TestCommands(TestCase):
             ("designer2", "вуышптук2"),
             # NOTE: Тут будет ошибка из-за совпадения начальных символов
             #       Непонятно, "des" относится к "designer" или к "designer2"
-            (UnknownActionException, "DES"),
-            (UnknownActionException, "des"),
-            (UnknownActionException, "d"),
-            (UnknownActionException, "ВУЫ"),
-            (UnknownActionException, "вуы"),
-            (UnknownActionException, "в"),
+            (MultipleResultsFoundError, "DES"),
+            (MultipleResultsFoundError, "des"),
+            (MultipleResultsFoundError, "d"),
+            (MultipleResultsFoundError, "ВУЫ"),
+            (MultipleResultsFoundError, "вуы"),
+            (MultipleResultsFoundError, "в"),
             # NOTE: Просто невалидные значения
             (UnknownActionException, "1212"),
             (UnknownActionException, "NONE"),
