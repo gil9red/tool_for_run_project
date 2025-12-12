@@ -520,6 +520,14 @@ class TestGo(TestCase):
             ],
         )
 
+        self.assertEqual(
+            go.parse_cmd_args("tx 2,tr s\\".split()),
+            [
+                go.Command(name="tx", version="3.2.2", action="server", args=["ora"]),
+                go.Command(name="tx", version="trunk", action="server", args=["ora"]),
+            ],
+        )
+
         with self.assertRaises(UnknownArgException):
             go.parse_cmd_args("tx 3-tr d+s abc 123".split())
 

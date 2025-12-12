@@ -145,6 +145,9 @@ def _preprocess_args(name: str, action: str | None, args: list[str]) -> list[str
 
 def parse_cmd_args(args: list[str]) -> list[Command]:
     args: list[str] = args.copy()
+    if args and args[-1].endswith("\\"):  # Случай случайного клика на \ вместе с Enter
+        args[-1] = args[-1].rstrip("\\")
+
     name: str | None = None
 
     actions: list[str | None] = []
