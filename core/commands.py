@@ -351,7 +351,9 @@ def svn_where(context: RunContext):
     )
     result = ", ".join(versions)
 
-    print(f"Строка {text!r} (за {last_days} дней) встречается в версиях: {result}")
+    print(
+        f"Строка {text!r} (за {last_days} дней) встречается в версиях ({len(versions)}): {result}"
+    )
 
 
 def svn_get_age_of_version(context: RunContext):
