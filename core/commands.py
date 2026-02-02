@@ -325,7 +325,9 @@ def svn_find_release_versions(context: RunContext):
     except Exception as e:
         raise GoException(str(e))
 
-    print(f"Коммит с {text!r} (за {last_days} дней) в {version} попал в версию: {result}\n")
+    print(
+        f"Коммит с {text!r} (за {last_days} дней) в {version} попал в версию: {result}\n"
+    )
 
 
 def svn_where(context: RunContext):
