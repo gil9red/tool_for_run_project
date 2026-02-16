@@ -49,7 +49,7 @@
             "trace": "!!trace_viewer.cmd"
         },
         "vars": {
-            "URL_JENKINS": "http://10.77.204.68:8080"
+            "URL_JENKINS": "https://jenkins-apd.compassplus.com"
         }
     },
     "radix": {
