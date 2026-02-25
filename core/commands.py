@@ -60,7 +60,7 @@ class Command:
     action: str | None = None
     args: list[str] = field(default_factory=list)
 
-    def _check_parameter(self, param: str):
+    def _check_parameter(self, param: str) -> None:
         settings = get_project(self.name)
 
         value = getattr(self, param)
@@ -76,7 +76,7 @@ class Command:
     def is_forced(self) -> bool:
         return self.args and "-f" in self.args
 
-    def run(self):
+    def run(self) -> None:
         settings: dict = get_project(self.name)
         options: dict = settings["options"]
 
