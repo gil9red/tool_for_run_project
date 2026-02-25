@@ -46,7 +46,7 @@ def merge_dicts(source: dict, destination: dict) -> dict:
 def walk_dict(
     node: dict,
     value_process_func: Callable[[Any, Any], Any] | None = None,
-):
+) -> None:
     for key, value in node.items():
         if value_process_func:
             value = value_process_func(key, value)
@@ -164,7 +164,7 @@ def settings_preprocess(settings: dict[str, dict]) -> dict[str, dict]:
 SETTINGS = __SETTINGS
 
 
-def run_settings_preprocess():
+def run_settings_preprocess() -> None:
     global SETTINGS
     SETTINGS = settings_preprocess(__SETTINGS)
 

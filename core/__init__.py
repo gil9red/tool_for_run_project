@@ -27,7 +27,7 @@ class GoException(Exception):
 
 
 class UnknownNameException(GoException):
-    def __init__(self, name: str, supported: Iterable[str]):
+    def __init__(self, name: str, supported: Iterable[str]) -> None:
         self.name = name
         self.supported = list(sorted(supported))
 
@@ -35,7 +35,7 @@ class UnknownNameException(GoException):
 
 
 class UnknownActionException(GoException):
-    def __init__(self, action: str, supported: Iterable[str]):
+    def __init__(self, action: str, supported: Iterable[str]) -> None:
         self.action = action
         self.supported = list(sorted(supported))
 
@@ -45,7 +45,7 @@ class UnknownActionException(GoException):
 
 
 class UnknownVersionException(GoException):
-    def __init__(self, version: str, supported: Iterable[str]):
+    def __init__(self, version: str, supported: Iterable[str]) -> None:
         self.version = version
         self.supported = list(supported)
 
@@ -55,7 +55,7 @@ class UnknownVersionException(GoException):
 
 
 class UnknownArgException(GoException):
-    def __init__(self, arg: str, supported: Iterable[str]):
+    def __init__(self, arg: str, supported: Iterable[str]) -> None:
         self.arg = arg
         self.supported = list(supported)
 
@@ -65,7 +65,7 @@ class UnknownArgException(GoException):
 
 
 class ParameterMissingException(GoException):
-    def __init__(self, name: str, param: str):
+    def __init__(self, name: str, param: str) -> None:
         self.name = name
         self.param = param
 
@@ -75,7 +75,7 @@ class ParameterMissingException(GoException):
 
 
 class ParameterAvailabilityException(GoException):
-    def __init__(self, command: "Command", param: str, availability: AvailabilityEnum):
+    def __init__(self, command: "Command", param: str, availability: AvailabilityEnum) -> None:
         if availability == AvailabilityEnum.REQUIRED:
             post_fix = "должно быть установлено!"
         elif availability == AvailabilityEnum.PROHIBITED:
@@ -93,7 +93,7 @@ class ParameterAvailabilityException(GoException):
 
 
 class MultipleResultsFoundError(GoException):
-    def __init__(self, alias: str, variants: Iterable[str]):
+    def __init__(self, alias: str, variants: Iterable[str]) -> None:
         self.alias = alias
         self.variants = list(variants)
 
@@ -169,7 +169,7 @@ def is_like_a_version(value: str) -> bool:
     )
 
 
-def _open_path(file_name: str, dir_file_name: str | None = None):
+def _open_path(file_name: str, dir_file_name: str | None = None) -> None:
     if sys.platform == "win32":
         os.startfile(file_name, cwd=dir_file_name)
     else:
@@ -177,7 +177,7 @@ def _open_path(file_name: str, dir_file_name: str | None = None):
         subprocess.call([opener, file_name], cwd=dir_file_name)
 
 
-def run_file(file_name: Path | str):
+def run_file(file_name: Path | str) -> None:
     if isinstance(file_name, str):
         file_name = Path(file_name)
 

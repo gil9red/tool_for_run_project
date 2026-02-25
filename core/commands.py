@@ -152,7 +152,7 @@ class RunContext:
     description: str = ""
 
 
-def run_path(context: RunContext):
+def run_path(context: RunContext) -> None:
     path: str = context.path
     args: list[str] = context.command.args
 
@@ -179,7 +179,7 @@ def run_path(context: RunContext):
     run_file(file_name)
 
 
-def open_path_dir(context: RunContext):
+def open_path_dir(context: RunContext) -> None:
     path_dir: Path = Path(context.path).resolve()
     if path_dir.is_file():
         path_dir = path_dir.parent
@@ -189,7 +189,7 @@ def open_path_dir(context: RunContext):
     _open_path(str(path_dir))
 
 
-def kill(context: RunContext):
+def kill(context: RunContext) -> None:
     path: str = context.path
     args: list[str] = context.command.args
 
@@ -227,7 +227,7 @@ def kill(context: RunContext):
         print("Не удалось найти процессы!")
 
 
-def processes(context: RunContext):
+def processes(context: RunContext) -> None:
     path: str = context.path
     args: list[str] = context.command.args
 
@@ -270,7 +270,7 @@ def processes(context: RunContext):
         print("Не удалось найти процессы!")
 
 
-def svn_get_last_release_version(context: RunContext):
+def svn_get_last_release_version(context: RunContext) -> None:
     command = context.command
     args: list[str] = command.args
     version: str | None = command.version
@@ -358,7 +358,7 @@ def svn_where(context: RunContext):
     )
 
 
-def svn_get_age_of_version(context: RunContext):
+def svn_get_age_of_version(context: RunContext) -> None:
     command = context.command
     version: str | None = command.version
 
@@ -378,11 +378,11 @@ def svn_get_age_of_version(context: RunContext):
     print(f"Возраст версии {version!r}:\n{result}\n")
 
 
-def get_versions_of_version(context: RunContext):
+def get_versions_of_version(context: RunContext) -> None:
     run_get_project_versions(Path(context.path))
 
 
-def manager_up(context: RunContext):
+def manager_up(context: RunContext) -> None:
     path = Path(context.path)
 
     # NOTE: "C:\DEV__RADIX\manager\manager\bin\manager.cmd" -> "C:\DEV__RADIX\manager"
@@ -408,7 +408,7 @@ def manager_up(context: RunContext):
         shutil.move(file, new_file)
 
 
-def manager_clean(context: RunContext):
+def manager_clean(context: RunContext) -> None:
     path = Path(context.path)
 
     # NOTE: "C:\DEV__RADIX\manager\manager\bin\manager.cmd" -> "C:\DEV__RADIX\manager"
@@ -425,7 +425,7 @@ def manager_clean(context: RunContext):
         file.unlink()
 
 
-def svn_update(context: RunContext):
+def svn_update(context: RunContext) -> None:
     path: str = context.path
     command = context.command
 
@@ -451,7 +451,7 @@ def svn_update(context: RunContext):
     os.system(command_svn)
 
 
-def run_radix_update_compile_designer(context: RunContext):
+def run_radix_update_compile_designer(context: RunContext) -> None:
     path: str = context.path
     script_path: str = radix_update_compile_designer.__file__
 

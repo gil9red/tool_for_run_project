@@ -109,7 +109,7 @@ for name in ["tx", "optt", "abc"]:
     default_version = SETTINGS_TEMPLATE["__radix_base"]["options"]["default_version"]
     base_version = SETTINGS_TEMPLATE[name]["base_version"]
 
-    def _create_files(path: str, version: str):
+    def _create_files(path: str, version: str) -> None:
         for file_name in ["!!designer.cmd", "!!server.cmd", "!!server-postgres.cmd"]:
             d = DIR_ENV / path / version
             d.mkdir(parents=True, exist_ok=True)
@@ -166,7 +166,7 @@ SETTINGS = go.SETTINGS
 
 
 class TestCommon(TestCase):
-    def test_override_base(self):
+    def test_override_base(self) -> None:
         self.assertEqual(
             SETTINGS["manager"]["options"]["action"],
             go.AvailabilityEnum.OPTIONAL,
@@ -180,7 +180,7 @@ class TestCommon(TestCase):
             go.AvailabilityEnum.PROHIBITED,
         )
 
-    def test_is_like_a_version(self):
+    def test_is_like_a_version(self) -> None:
         self.assertTrue(is_like_a_version("trunk"))
         self.assertTrue(is_like_a_version("екгтл"))
         self.assertTrue(is_like_a_version("екг"))
@@ -197,7 +197,7 @@ class TestCommon(TestCase):
         self.assertTrue(is_like_a_version("22,23,екгтл"))
         self.assertTrue(is_like_a_version("22,23,е"))
 
-    def test_get_similar_value(self):
+    def test_get_similar_value(self) -> None:
         with self.subTest(msg="OK"):
             items = ["server", "designer", "explorer"]
             self.assertEqual(get_similar_value("server", items), "server")
@@ -223,13 +223,13 @@ class TestCommon(TestCase):
                 self.assertIsNone(get_similar_value("ru", items))
             self.assertEqual(["run", "run2", "run3"], cm.exception.variants)
 
-    def test_is_like_a_short_version(self):
+    def test_is_like_a_short_version(self) -> None:
         self.assertTrue(is_like_a_short_version("22"))
         self.assertFalse(is_like_a_short_version("3.2.22"))
 
 
 class TestSettings(TestCase):
-    def test_get_versions_by_path(self):
+    def test_get_versions_by_path(self) -> None:
         path_value: str | list[str] = settings.get_path_by_name("tx")
         self.assertTrue(isinstance(path_value, str))
         self.assertEqual(
@@ -267,7 +267,7 @@ class TestSettings(TestCase):
             ),
         )
 
-    def test_get_project(self):
+    def test_get_project(self) -> None:
         self.assertIsNotNone(settings.get_project("tx"))
         self.assertIsNotNone(settings.get_project("t"))
         self.assertIsNotNone(settings.get_project("еч"))
@@ -280,7 +280,7 @@ class TestSettings(TestCase):
         self.assertIsNotNone(settings.get_project("щ"))
         self.assertIsNotNone(settings.get_project("щз"))
 
-    def test_resolve_name(self):
+    def test_resolve_name(self) -> None:
         self.assertEqual(settings.resolve_name("t"), "tx")
         self.assertEqual(settings.resolve_name("tx"), "tx")
         self.assertEqual(settings.resolve_name("еч"), "tx")
@@ -291,7 +291,7 @@ class TestSettings(TestCase):
         with self.assertRaises(UnknownNameException):
             settings.resolve_name("1212")
 
-    def test_get_path_by_name(self):
+    def test_get_path_by_name(self) -> None:
         self.assertIsNotNone(settings.get_path_by_name("tx"))
         self.assertIsNotNone(settings.get_path_by_name("t"))
         self.assertIsNotNone(settings.get_path_by_name("еч"))
@@ -310,7 +310,7 @@ class TestSettings(TestCase):
 
 
 class TestCommands(TestCase):
-    def test_resolve_actions(self):
+    def test_resolve_actions(self) -> None:
         self.assertEqual(resolve_actions("tx", "designer"), ["designer"])
         self.assertEqual(resolve_actions("tx", "des"), ["designer"])
         self.assertEqual(resolve_actions("tx", "d"), ["designer"])
@@ -345,7 +345,7 @@ class TestCommands(TestCase):
         with self.assertRaises(UnknownActionException):
             resolve_actions("tx", "1212")
 
-    def test_resolve_version(self):
+    def test_resolve_version(self) -> None:
         self.assertEqual(resolve_version("tx", "trunk"), "trunk")
         self.assertEqual(resolve_version("tx", "tr"), "trunk")
         self.assertEqual(resolve_version("еч", "trunk"), "trunk")
@@ -359,7 +359,7 @@ class TestCommands(TestCase):
         with self.assertRaises(UnknownVersionException):
             resolve_version("tx", "foobar")
 
-    def test_resolve_alias(self):
+    def test_resolve_alias(self) -> None:
         supported: list[str] = [
             "server",
             "explorer",
@@ -424,7 +424,7 @@ class TestCommands(TestCase):
                             unknown_alias_exception_cls=expected,
                         )
 
-    def test_get_similar_version_path(self):
+    def test_get_similar_version_path(self) -> None:
         versions: dict = settings.get_project("tx")["versions"]
         path_tx_trunk: str = versions["trunk"]
         path_tx_3_2_3: str = versions["3.2.3"]
@@ -445,7 +445,7 @@ class TestCommands(TestCase):
         self.assertIn(r"local\remote\foo\bar", get_similar_version_path("abc", "4"))
         self.assertIn(r"local\remote\foo\abc", get_similar_version_path("abc", "7"))
 
-    def test_get_file_by_action(self):
+    def test_get_file_by_action(self) -> None:
         self.assertEqual(
             get_file_by_action("tx", "designer"),
             get_file_by_action("tx", "d"),
@@ -476,7 +476,7 @@ class TestCommands(TestCase):
 
 
 class TestGo(TestCase):
-    def test_parse_cmd_args(self):
+    def test_parse_cmd_args(self) -> None:
         self.assertEqual(
             go.parse_cmd_args("tx s".split()),
             [go.Command(name="tx", version="trunk", action="server", args=["ora"])],

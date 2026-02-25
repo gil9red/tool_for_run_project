@@ -225,7 +225,7 @@ def parse_cmd_args(args: list[str]) -> list[Command]:
     return commands
 
 
-def run(args: list[str]):
+def run(args: list[str]) -> None:
     try:
         for command in parse_cmd_args(args):
             command.run()
@@ -266,7 +266,7 @@ def run(args: list[str]):
             )
 
 
-def _print_help():
+def _print_help() -> None:
     print(ABOUT_TEXT)
     sys.exit()
 

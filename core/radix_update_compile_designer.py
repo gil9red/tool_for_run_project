@@ -72,7 +72,7 @@ def execute_svn_up(
 ) -> SvnUpResult:
     result: SvnUpResult = SvnUpResult()
 
-    def _fill_result_on_out_line_func(line: str):
+    def _fill_result_on_out_line_func(line: str) -> None:
         on_out_line_func(line)
 
         # TODO:
@@ -135,7 +135,7 @@ def run(path: Path | str):
 
                 lines: list[str] = []
 
-                def _on_out_line_func(line: str):
+                def _on_out_line_func(line: str) -> None:
                     print("[1.2]", line, end="")
                     lines.append(line)
 
