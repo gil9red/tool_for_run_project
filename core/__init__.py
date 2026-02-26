@@ -50,7 +50,7 @@ class UnknownVersionException(GoException):
         self.supported = list(supported)
 
         super().__init__(
-            f"Неизвестная версия {self.version!r}, поддержано: {self.supported}"
+            f"Неизвестная версия {self.version!r}, найдено: {self.supported}"
         )
 
 

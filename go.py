@@ -240,7 +240,7 @@ def run(args: list[str]) -> None:
         # Если для сущности параметр версии возможен
         if options["version"] != AvailabilityEnum.PROHIBITED:
             supported_versions = ", ".join(sorted(settings["versions"]))
-            print(f"Поддерживаемые версии: {supported_versions}")
+            print(f"Найдены версии: {supported_versions}")
             is_answered = True
 
         # Если для сущности параметр action возможен
