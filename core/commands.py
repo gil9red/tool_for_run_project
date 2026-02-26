@@ -482,7 +482,7 @@ def resolve_version(name: str, alias: str) -> str:
 
     # Если короткая версия, нужно ее расширить, добавив основание версии
     if is_like_a_short_version(alias):
-        base_version = settings.get("base_version")
+        base_version: str | list[str] = settings.get("base_version")
         if not base_version:
             text = (
                 f'Атрибут "base_version", используемый с короткой версией (="{alias}"), '
@@ -491,6 +491,22 @@ def resolve_version(name: str, alias: str) -> str:
             raise GoException(text)
 
         # Составление полной версии
+
+        # Для списка нужно будет перебрать доступные версии по шаблону
+        if isinstance(base_version, list):
+            for v in base_version:
+                full_alias = v.format(number=alias)
+                try:
+                    return resolve_alias(
+                        alias=full_alias,
+                        supported=settings["versions"],
+                        unknown_alias_exception_cls=UnknownVersionException,
+                    )
+                except UnknownVersionException:
+                    pass
+
+            raise UnknownVersionException(alias, supported=settings["versions"])
+
         alias = base_version.format(number=alias)
 
     return resolve_alias(

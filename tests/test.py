@@ -6,6 +6,7 @@ __author__ = "ipetrash"
 
 import json
 import os
+import shutil
 
 from pathlib import Path
 from unittest import TestCase
@@ -14,6 +15,7 @@ from unittest import TestCase
 DIR: Path = Path(__file__).parent.resolve()
 
 DIR_ENV: Path = DIR / "env"
+shutil.rmtree(DIR_ENV, ignore_errors=True)
 DIR_ENV.mkdir(parents=True, exist_ok=True)
 
 SETTINGS_TEMPLATE_JSON: str = r"""
@@ -55,7 +57,10 @@ SETTINGS_TEMPLATE_JSON: str = r"""
     "optt": {
         "base": "__radix_base",
         "path": "C:/DEV__OPTT",
-        "base_version": "2.1.{number}",
+        "base_version": [
+            "2.1.{number}",
+            "3.1.{number}"
+        ],
         "jenkins_url": "${self['optt']['vars']['URL_JENKINS'] + '/job/OPTT_{version}_build/lastBuild/api/json?tree=result,timestamp,url'}",
         "svn_dev_url": "svn://127.0.0.1/optt/dev/trunk"
     },
@@ -107,7 +112,7 @@ SETTINGS_TEMPLATE = json.loads(SETTINGS_TEMPLATE_JSON)
 for name in ["tx", "optt", "abc"]:
     path_value: str | list[str] = SETTINGS_TEMPLATE[name]["path"]
     default_version = SETTINGS_TEMPLATE["__radix_base"]["options"]["default_version"]
-    base_version = SETTINGS_TEMPLATE[name]["base_version"]
+    base_version: str | list[str] = SETTINGS_TEMPLATE[name]["base_version"]
 
     def _create_files(path: str, version: str) -> None:
         for file_name in ["!!designer.cmd", "!!server.cmd", "!!server-postgres.cmd"]:
@@ -115,17 +120,25 @@ for name in ["tx", "optt", "abc"]:
             d.mkdir(parents=True, exist_ok=True)
             (d / file_name).touch(exist_ok=True)
 
-    if isinstance(path_value, str):
-        path: str = path_value
-        for version_name in [default_version] + [
-            base_version.format(number=i) for i in [1, 2, 3]
-        ]:
-            _create_files(path, version_name)
+    if isinstance(base_version, list):
+        base_versions: list[str] = base_version
     else:
-        version = 1
-        for path in path_value:
+        base_versions: list[str] = [base_version]
+
+    if isinstance(path_value, list):
+        path_values: list[str] = path_value
+    else:
+        path_values: list[str] = [path_value]
+
+    version = 1
+    for path in path_values:
+        if default_version:  # Для сохранения уникальности версий
+            _create_files(path, default_version)
+            default_version = None
+
+        for v in base_versions:
             for i in range(3):
-                _create_files(path, base_version.format(number=version))
+                _create_files(path, v.format(number=version))
                 version += 1
 
 PATH_TEST_SETTINGS: Path = DIR_ENV / "test-settings.json"
@@ -240,8 +253,8 @@ class TestSettings(TestCase):
         path_value: str | list[str] = settings.get_path_by_name("optt")
         self.assertTrue(isinstance(path_value, str))
         self.assertEqual(
+            sorted(['2.1.1', '2.1.2', '2.1.3', '3.1.4', '3.1.5', '3.1.6', 'trunk']),
             sorted(settings.get_versions_by_path(path_value).keys()),
-            sorted(["2.1.1", "2.1.2", "2.1.3", "trunk"]),
         )
 
         path_value: str | list[str] = settings.get_path_by_name("abc")
@@ -251,7 +264,6 @@ class TestSettings(TestCase):
         for path in path_value:
             version_by_path.update(settings.get_versions_by_path(path))
         self.assertEqual(
-            sorted(version_by_path.keys()),
             sorted(
                 [
                     "4.1.1.10-dev",
@@ -263,8 +275,10 @@ class TestSettings(TestCase):
                     "4.1.7.10-dev",
                     "4.1.8.10-dev",
                     "4.1.9.10-dev",
+                    "trunk",
                 ]
             ),
+            sorted(version_by_path.keys()),
         )
 
     def test_get_project(self) -> None:
@@ -350,6 +364,8 @@ class TestCommands(TestCase):
         self.assertEqual(resolve_version("tx", "tr"), "trunk")
         self.assertEqual(resolve_version("еч", "trunk"), "trunk")
         self.assertEqual(resolve_version("optt", "trunk"), "trunk")
+        self.assertEqual(resolve_version("optt", "1"), "2.1.1")
+        self.assertEqual(resolve_version("optt", "6"), "3.1.6")
         self.assertEqual(resolve_version("щзе", "trunk"), "trunk")
         self.assertEqual(resolve_version("tx", "екгтл"), "trunk")
         self.assertEqual(resolve_version("tx", "ек"), "trunk")
