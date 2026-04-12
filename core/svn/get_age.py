@@ -4,7 +4,7 @@
 __author__ = "ipetrash"
 
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from core.svn import URL_DEFAULT_SVN_PATH, Revision, run_svn_command
 from third_party.get_human_delta import get_human_delta
@@ -25,7 +25,7 @@ def get_age(
 
     revision = revisions[0]
 
-    delta = datetime.utcnow().replace(tzinfo=None) - revision.date.replace(tzinfo=None)
+    delta = datetime.now(timezone.utc).replace(tzinfo=None) - revision.date.replace(tzinfo=None)
 
     lines = [
         f"Age: {get_human_delta(delta)}",
