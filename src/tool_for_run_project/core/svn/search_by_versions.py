@@ -7,7 +7,7 @@ __author__ = "ipetrash"
 import re
 from datetime import date, timedelta
 
-from core.svn import URL_DEFAULT_SVN_PATH, run_svn_command
+from tool_for_run_project.core.svn import URL_DEFAULT_SVN_PATH, run_svn_command
 
 
 PATTERN_VERSION = re.compile(r"/dev/(.+?)/")

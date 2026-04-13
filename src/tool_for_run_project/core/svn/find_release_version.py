@@ -7,8 +7,8 @@ __author__ = "ipetrash"
 import re
 from datetime import date, timedelta
 
-from core.svn import URL_DEFAULT_SVN_PATH, Revision, run_svn_command
-from core.svn.get_last_release_version import get_last_release_version
+from tool_for_run_project.core.svn import URL_DEFAULT_SVN_PATH, Revision, run_svn_command
+from tool_for_run_project.core.svn.get_last_release_version import get_last_release_version
 
 
 def find_release_version(

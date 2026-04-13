@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 from typing import Any, Callable
 
-from core import (
+from tool_for_run_project.core import (
     AvailabilityEnum,
     GoException,
     is_like_a_version,
@@ -61,11 +61,11 @@ PATTERN_CODE_BLOCK = re.compile(r"^\$\{(.+)}$")
 
 def walk_dir_run_code(_: Any, v: Any, settings: dict[str, Any]) -> Any:
     # NOTE: Импортировать нужно тут - глобально нельзя
-    import core.commands
+    from tool_for_run_project.core import AvailabilityEnum, commands
 
     global_vars: dict[str, Any] = {
-        "AvailabilityEnum": core.AvailabilityEnum,
-        "commands": core.commands,
+        "AvailabilityEnum": AvailabilityEnum,
+        "commands": commands,
         "self": settings,
     }
 

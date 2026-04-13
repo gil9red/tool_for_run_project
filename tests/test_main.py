@@ -147,15 +147,15 @@ PATH_TEST_SETTINGS.write_text(SETTINGS_TEMPLATE_JSON, encoding="utf-8")
 # NOTE: Установка переменной окружения до импорта модулей, который явно или не явно импортируют модуль settings.py
 os.environ["PATH_SETTINGS"] = str(PATH_TEST_SETTINGS)
 
-import go
+from tool_for_run_project import go, settings
 
-from core.commands import (
+from tool_for_run_project.core.commands import (
     resolve_actions,
     resolve_version,
     get_similar_version_path,
     get_file_by_action,
 )
-from core import (
+from tool_for_run_project.core import (
     UnknownActionException,
     UnknownArgException,
     UnknownNameException,
@@ -164,11 +164,8 @@ from core import (
     resolve_alias,
     is_like_a_version,
     get_similar_value,
-    is_like_a_short_version,
+    is_like_a_short_version, commands,
 )
-
-from core import commands
-import settings
 
 SETTINGS = go.SETTINGS
 

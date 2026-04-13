@@ -6,8 +6,8 @@ __author__ = "ipetrash"
 
 from datetime import datetime, timezone
 
-from core.svn import URL_DEFAULT_SVN_PATH, Revision, run_svn_command
-from third_party.get_human_delta import get_human_delta
+from tool_for_run_project.core.svn import URL_DEFAULT_SVN_PATH, Revision, run_svn_command
+from tool_for_run_project.third_party.get_human_delta import get_human_delta
 
 
 def get_age(

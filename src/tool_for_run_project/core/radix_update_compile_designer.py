@@ -14,7 +14,7 @@ from pathlib import Path
 from typing import Callable
 from timeit import default_timer
 
-from core import run_file
+from tool_for_run_project.core import run_file
 
 
 @dataclass

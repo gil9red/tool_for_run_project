@@ -6,6 +6,6 @@ setlocal
 cd /d %~dp0
 cd /d ..
 
-set PYTHONPATH=%cd%
+set PYTHONPATH=%cd%/src
 set JIRA_HOST=https://helpdesk.compassluxe.com
-call python core/jira.py %*
+call python -m tool_for_run_project.core.jira %*

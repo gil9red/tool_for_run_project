@@ -16,7 +16,7 @@ from typing import Callable
 
 import psutil
 
-from core import (
+from tool_for_run_project.core import (
     AvailabilityEnum,
     ParameterAvailabilityException,
     GoException,
@@ -28,8 +28,8 @@ from core import (
     _open_path,
     run_file,
 )
-from core.jenkins import do_check_jenkins_job, JenkinsJobCheckException
-from core.kill import (
+from tool_for_run_project.core.jenkins import do_check_jenkins_job, JenkinsJobCheckException
+from tool_for_run_project.core.kill import (
     kill_servers,
     kill_explorers,
     kill_designers,
@@ -38,16 +38,16 @@ from core.kill import (
     is_explorer,
     is_designer,
 )
-from core.utils import run_command_in_new_terminal
-from core.svn.find_release_version import find_release_version
-from core.svn.get_age import get_age as svn_get_age
-from core.svn.get_last_release_version import (
+from tool_for_run_project.core.utils import run_command_in_new_terminal
+from tool_for_run_project.core.svn.find_release_version import find_release_version
+from tool_for_run_project.core.svn.get_age import get_age as svn_get_age
+from tool_for_run_project.core.svn.get_last_release_version import (
     get_last_release_version as get_last_release_version_svn,
 )
-from core.svn.search_by_versions import search as search_by_versions
-from settings import get_project, get_path_by_name
+from tool_for_run_project.core.svn.search_by_versions import search as search_by_versions
+from tool_for_run_project.settings import get_project, get_path_by_name
 
-from third_party.get_project_versions import process as run_get_project_versions
+from tool_for_run_project.third_party.get_project_versions import process as run_get_project_versions
 
 
 ActionValue = str | list[str, str | Callable] | dict | Callable | None

@@ -9,7 +9,7 @@ from typing import Any
 
 import requests
 
-from core import GoException
+from tool_for_run_project.core import GoException
 
 
 class JenkinsJobCheckException(GoException):
@@ -54,7 +54,7 @@ def do_check_jenkins_job(url: str, version: str):
 
 
 if __name__ == "__main__":
-    from settings import get_project, run_settings_preprocess
+    from tool_for_run_project.settings import get_project, run_settings_preprocess
 
     run_settings_preprocess()
 

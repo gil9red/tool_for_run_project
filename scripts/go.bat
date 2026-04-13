@@ -6,4 +6,6 @@ setlocal
 cd /d %~dp0
 cd /d ..
 
-call python go.py %*
+set PYTHONPATH=%cd%/src
+set JIRA_HOST=https://helpdesk.compassluxe.com
+call python -m tool_for_run_project.go %*

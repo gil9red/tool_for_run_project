@@ -13,7 +13,7 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Iterable, Type
 
-from third_party.from_ghbdtn import from_ghbdtn
+from tool_for_run_project.third_party.from_ghbdtn import from_ghbdtn
 
 
 class AvailabilityEnum(Enum):

@@ -7,28 +7,28 @@ __author__ = "ipetrash"
 import sys
 import traceback
 
-from core import (
+from tool_for_run_project.core import (
     GoException,
     ParameterAvailabilityException,
     AvailabilityEnum,
     is_like_a_version,
 )
 
-import settings
+from tool_for_run_project import settings
 
 # NOTE: Нужно для работы core.commands
 settings.run_settings_preprocess()
 SETTINGS = settings.SETTINGS
 
-from core import resolve_alias, UnknownArgException
-from core.commands import (
+from tool_for_run_project.core import resolve_alias, UnknownArgException
+from tool_for_run_project.core.commands import (
     ActionValue,
     Command,
     get_file_by_action,
     resolve_actions,
     resolve_version,
 )
-from settings import get_project, resolve_name
+from tool_for_run_project.settings import get_project, resolve_name
 
 
 ABOUT_TEXT = r"""
@@ -278,7 +278,7 @@ if __name__ == "__main__":
 
     if args and args[0] == "-d":
         import json
-        from settings import PATH_SETTINGS
+        from tool_for_run_project.settings import PATH_SETTINGS
 
         print(PATH_SETTINGS)
         print(json.dumps(SETTINGS, indent=4, default=repr))
