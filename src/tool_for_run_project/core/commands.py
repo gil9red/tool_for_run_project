@@ -362,6 +362,10 @@ def svn_get_age_of_version(context: RunContext) -> None:
     command = context.command
     version: str | None = command.version
 
+    if not version:
+        print("Нужно указать версию проекта")
+        return
+
     if version == "trunk" and not command.is_forced():
         print(
             f"Для версии {version!r} операция будет выполняться слишком долго.\n"
