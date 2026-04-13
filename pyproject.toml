@@ -1,0 +1,19 @@
+[project]
+name = "tool-for-run-project"
+version = "1.0.0"
+description = "CLI-утилита для управления локальными проектами и быстрого выполнения их команд через единый JSON-конфиг."
+requires-python = ">=3.12"
+dependencies = [
+    "psutil==6.1.0",
+    "requests==2.32.2",
+]
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE.txt"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
