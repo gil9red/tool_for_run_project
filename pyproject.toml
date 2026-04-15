@@ -11,11 +11,6 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE.txt"]
 
-[dependency-groups]
-dev = [
-    "pytest>=9.0.3",
-]
-
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
