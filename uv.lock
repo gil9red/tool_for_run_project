@@ -125,7 +125,7 @@ wheels = [
 
 [[package]]
 name = "tool-for-run-project"
-version = "1.0.0"
+version = "2026.4.15"
 source = { editable = "." }
 dependencies = [
     { name = "psutil" },

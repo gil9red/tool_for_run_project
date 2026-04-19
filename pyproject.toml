@@ -1,6 +1,6 @@
 [project]
 name = "tool-for-run-project"
-version = "1.0.0"
+version = "2026.4.15"
 description = "CLI-утилита для управления локальными проектами и быстрого выполнения их команд через единый JSON-конфиг."
 requires-python = ">=3.12"
 dependencies = [
