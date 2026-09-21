@@ -47,7 +47,7 @@ def execute(
     assert_return_code: bool = True,
 ):
     print(
-        f"[execute] command={command!r}, directory={str(directory)!r}, encoding={encoding!r}"
+        f'[execute] command={command!r}, directory="{directory}", encoding={encoding!r}'
     )
 
     popen = subprocess.Popen(

@@ -184,7 +184,7 @@ def open_path_dir(context: RunContext) -> None:
     if path_dir.is_file():
         path_dir = path_dir.parent
 
-    print(f"Открытие папки: {str(path_dir)!r}")
+    print(f'Открытие папки: "{path_dir}"')
 
     _open_path(str(path_dir))
 

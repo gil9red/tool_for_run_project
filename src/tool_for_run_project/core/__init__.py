@@ -182,7 +182,7 @@ def run_file(file_name: Path | str) -> None:
         file_name = Path(file_name)
 
     file_name = file_name.resolve()
-    print(f"Запуск: {str(file_name)!r}")
+    print(f'Запуск: "{file_name}"')
 
     dir_file_name = file_name.parent
     _open_path(str(file_name), str(dir_file_name))
