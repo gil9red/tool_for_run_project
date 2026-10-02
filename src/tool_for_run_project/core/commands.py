@@ -39,6 +39,7 @@ from tool_for_run_project.core.kill import (
     is_designer,
 )
 from tool_for_run_project.core.utils import run_command_in_new_terminal
+from tool_for_run_project.core.svn import Revision
 from tool_for_run_project.core.svn.find_release_version import find_release_version
 from tool_for_run_project.core.svn.get_age import get_age as svn_get_age
 from tool_for_run_project.core.svn.get_last_release_version import (
@@ -49,6 +50,8 @@ from tool_for_run_project.settings import get_project, get_path_by_name
 
 from tool_for_run_project.third_party.get_project_versions import process as run_get_project_versions
 
+from tool_for_run_project.third_party.shorten import shorten
+from tool_for_run_project.third_party.from_ghbdtn import from_ghbdtn
 
 ActionValue = str | list[str, str | Callable] | dict | Callable | None
 
@@ -73,8 +76,31 @@ class Command:
             if value:
                 raise ParameterAvailabilityException(self, param, settings_param)
 
+    def _has_in_args(self, target_arg: str) -> bool:
+        if not self.args:
+            return False
+
+        target_arg: str = target_arg.lower()
+        target_arg_invert: str = from_ghbdtn(target_arg)  # "-f" -> "-а"
+
+        return any(
+            True
+            for arg in self.args
+            if arg.lower().startswith(target_arg)
+            or arg.lower().startswith(target_arg_invert)
+        )
+
     def is_forced(self) -> bool:
-        return self.args and "-f" in self.args
+        return self._has_in_args("-f")
+
+    def is_help(self) -> bool:
+        return self._has_in_args("-h")
+
+    def is_verbose(self) -> bool:
+        return self._has_in_args("-v")
+
+    def is_verbose_full(self) -> bool:
+        return self._has_in_args("-vf")
 
     def run(self) -> None:
         settings: dict = get_project(self.name)
@@ -330,31 +356,54 @@ def svn_find_release_versions(context: RunContext):
     )
 
 
-def svn_where(context: RunContext):
+def svn_where(context: RunContext) -> None:
     command = context.command
 
     args: list[str] = command.args
     if not args:
         raise GoException("Текст для поиска не указан!")
 
-    text = args[0]
+    text: str = args[0]
 
     # Значение в днях передается в аргументах
-    last_days = 30
+    last_days: int = 30
     if len(args) > 1 and args[1].isdigit():
         last_days = int(args[1])
 
     url_svn_path = get_project(command.name)["svn_dev_url"]
 
-    versions: list[str] = search_by_versions(
+    is_verbose: bool = command.is_verbose()
+    is_verbose_short: bool = not command.is_verbose_full()
+
+    result: list[str] | dict[str, list[Revision]] = search_by_versions(
         text=text,
         last_days=last_days,
         url_svn_path=url_svn_path,
+        return_revisions=is_verbose,  # NOTE: Verbose - подробно выводит
     )
-    result = ", ".join(versions)
+    versions: list[str]
+    if isinstance(result, list):
+        versions = result
+    elif isinstance(result, dict):
+        versions = list(result.keys())
+
+        for version, revisions in result.items():
+            print(f"\n{version} ({len(revisions)}):")
+            for revision in revisions:
+                date_str = revision.date.strftime("%Y-%m-%d %H:%M:%S")
+
+                message: str = revision.msg
+                if is_verbose_short:
+                    # Из коммита берется одна строка и сокращается до 100 символов
+                    message = message.splitlines()[0]
+                    message = shorten(message, length=100, middle=True)
+
+                print(f"    [{date_str}] {message!r}")
+    else:
+        raise GoException(f"Неподдерживаемый тип результата search: {type(result)}")
 
     print(
-        f"Строка {text!r} (за {last_days} дней) встречается в версиях ({len(versions)}): {result}"
+        f"\nСтрока {text!r} (за {last_days} дней) встречается в версиях ({len(versions)}): {', '.join(versions)}"
     )
 
 
