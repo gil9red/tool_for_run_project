@@ -28,7 +28,10 @@ from tool_for_run_project.core import (
     _open_path,
     run_file,
 )
-from tool_for_run_project.core.jenkins import do_check_jenkins_job, JenkinsJobCheckException
+from tool_for_run_project.core.jenkins import (
+    do_check_jenkins_job,
+    JenkinsJobCheckException,
+)
 from tool_for_run_project.core.kill import (
     kill_servers,
     kill_explorers,
@@ -45,11 +48,14 @@ from tool_for_run_project.core.svn.get_age import get_age as svn_get_age
 from tool_for_run_project.core.svn.get_last_release_version import (
     get_last_release_version as get_last_release_version_svn,
 )
-from tool_for_run_project.core.svn.search_by_versions import search as search_by_versions
+from tool_for_run_project.core.svn.search_by_versions import (
+    search as search_by_versions,
+)
 from tool_for_run_project.settings import get_project, get_path_by_name
 
-from tool_for_run_project.third_party.get_project_versions import process as run_get_project_versions
-
+from tool_for_run_project.third_party.get_project_versions import (
+    process as run_get_project_versions,
+)
 from tool_for_run_project.third_party.shorten import shorten
 from tool_for_run_project.third_party.from_ghbdtn import from_ghbdtn
 
