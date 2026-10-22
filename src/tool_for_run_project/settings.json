@@ -14,8 +14,8 @@
                 "ora": "!!server.cmd",
                 "pg": "!!server-postgres.cmd"
             },
-            "compile": "!build_ads__pause.bat",
-            "build": "!build_kernel__pause.cmd",
+            "compile": "!build_ads_pause.bat",
+            "build": "!build_kernel_pause.cmd",
             "update": [
                 "svn update",
                 "${commands.svn_update}"
@@ -54,12 +54,12 @@
     },
     "radix": {
         "base": "__radix_base",
-        "path": "C:/DEV__RADIX",
+        "path": "C:/DEV/RADIX",
         "base_version": "2.1.{number}"
     },
     "tx": {
         "base": "__radix_base",
-        "path": "C:/DEV__TX",
+        "path": "C:/DEV/TX",
         "base_version": [
             "3.2.{number}",
             "4.1.{number}"
@@ -69,7 +69,7 @@
     },
     "optt": {
         "base": "__radix_base",
-        "path": "C:/DEV__OPTT",
+        "path": "C:/DEV/OPTT",
         "base_version": "2.1.{number}",
         "jenkins_url": "${self['optt']['vars']['URL_JENKINS'] + '/job/OPTT_{version}_build/lastBuild/api/json?tree=result,timestamp,url'}",
         "svn_dev_url": "svn+cplus://svn2.compassplus.ru/twrbs/csm/optt/dev"
@@ -83,7 +83,7 @@
     },
     "manager": {
         "base": "__simple_base",
-        "path": "C:/DEV__RADIX/manager/manager/bin/manager.cmd",
+        "path": "C:/DEV/RADIX/manager/manager/bin/manager.cmd",
         "options": {
             "action": "${AvailabilityEnum.OPTIONAL}"
         },
